@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.7.3
+	version=1.7.4
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -657,6 +657,18 @@ function GetList(response) {
 		// ------------------------------------------------
 		var files = [];
 		xmlDoc.load (filename);
+
+		// Исправление известной ошибки ЦБ (когда в заголовке list.xml указана кодировка "utf-8", а текст содержит символы в win1251)
+		if (xmlDoc.parseError.errorCode == -1072896760){
+			var str = ReadTextFile(filename);
+			var re = /encoding\s*=\s*"utf-8"/i;
+			if (re.test(str)){
+				WriteLog("!Кодировка символов в листинге не соответствует указанной! Пытаемся исправить...");
+				str = str.replace(re, 'encoding="windows-1251"');
+				WriteTextFile(filename, str);
+				xmlDoc.load (filename);
+			}
+		}
 
 		if (xmlDoc.parseError.errorCode) {
 			WriteLog("!Загружен нечитабельный листинг "+filename);

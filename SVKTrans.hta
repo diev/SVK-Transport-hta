@@ -12,17 +12,17 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.7.4
+	version=1.7.5
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
 >
 <style type="text/css">
 	body, table  {font-family:MS Sans Serif; font-size:8pt; background-color:threedface; overflow:hidden;}
-	body  {margin:2px}
+	body  {margin:0;}
 	button {font-weight:bold; color:highlight; font-size:8pt;}
 	textarea {font-family:MS Sans Serif; font-size:8pt;}
-	td {margin:0px; width:100%; white-space:nowrap;}
+	td {margin:0; white-space:nowrap;}
 	label, legend {color:highlight;}
 	legend {font-weight:bold;}
 	input#TimerVisible {font-family:Courier; font-weight:bold; font-size:12pt; width:50pt; text-align:center; color:blue;}
@@ -988,8 +988,7 @@ function On_Load() {
 	ShowTimers();
 	CheckRestrictions();
 	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-		num_timer_onfinish = 6;
-		Connect();
+		StartTimer(0); // периодической проверка
 	}
 }
 
@@ -1011,33 +1010,30 @@ function ChkRestrictionsOnClick(){
 		<fieldset><legend>&nbsp;Время, оставшееся до...</legend>
 			<table width="100%" cellpadding="0" cellspacing="0" border="0">
 				<tr>
-					<td>&nbsp;&nbsp;... периодической проверки входящих сообщений:&nbsp;<span style="color:highlight;font-weight:bold;">&#185;</span>
+					<td width="100%">&nbsp;&nbsp;... периодической проверки входящих сообщений:&nbsp;<span style="color:highlight;font-weight:bold;">&#185;</span>
 					<td align="center"><span style="font:normal normal 16pt Wingdings; color:highlight;">&#xC1;</span>&nbsp;
 					<td><input type=text id=TimerVisible disabled><input type=text id=TimerHidden>&nbsp;
 				<tr>
-					<td>&nbsp;&nbsp;... проверки наличия исходящих сообщений:&nbsp;
+					<td width="100%">&nbsp;&nbsp;... проверки наличия исходящих сообщений:&nbsp;
 					<td align="center"><span style="font:normal normal 12pt Wingdings; color:highlight;">&#x2B;</span>&nbsp;
 					<td><input type=text id=TimerVisible disabled><input type=text id=TimerHidden>&nbsp;
 				<tr>
-					<td>&nbsp;&nbsp;... запроса ответа на отправленное сообщение:&nbsp;
+					<td width="100%">&nbsp;&nbsp;... запроса ответа на отправленное сообщение:&nbsp;
 					<td align="center"><span style="font:normal normal 12pt Wingdings; color:highlight;">&#x2E;</span>&nbsp;
 					<td><input type=text id=TimerVisible disabled><input type=text id=TimerHidden>&nbsp;
 				<tr>
-					<td>&nbsp;&nbsp;... повтора неудавшейся попытки соединения:&nbsp;
+					<td width="100%">&nbsp;&nbsp;... повтора неудавшейся попытки соединения:&nbsp;
 					<td align="center"><span style="font:normal normal 16pt Wingdings; color:highlight;">&#x29;</span>&nbsp;
 					<td><input type=text id=TimerVisible disabled><input type=text id=TimerHidden>&nbsp;
 			</table>
 		</fieldset>
-	<tr><td height="100%">
-		<table width="100%" height="100%" cellpadding="0" cellspacing="0" border="0">
-			<tr>
-				<td colspan=2><input id="ChkRestrictions" type=checkbox checked onClick="ChkRestrictionsOnClick()">
-				<label hidefocus for="ChkRestrictions"><span style="font-weight:bold;">&#185;</span>&nbsp;отключить периодическую проверку в <a href="#" onClick="WshShell.Run('notepad ' + rest_file)" title="Открыть файл ограничений по датам и времени" hidefocus>заданные</a> дни и часы. Текущее ограничение: <span id="TextRestrict"></span></label>
-			<tr height="30px">
-				<td colspan=2 align="center"><button onClick="num_timer_onfinish=4; Connect()" hidefocus>Установить соединение немедленно</button>
-			<tr>
-				<td colspan=2 height="100%"><textarea style="width:100%; height:100%;" id=Log></textarea>
-		</table>
+	<tr><td>
+		<input id="ChkRestrictions" type=checkbox checked onClick="ChkRestrictionsOnClick()">
+		<label hidefocus for="ChkRestrictions"><span style="font-weight:bold;">&#185;</span>&nbsp;отключить периодическую проверку в <a href="#" onClick="WshShell.Run('notepad ' + rest_file)" title="Открыть файл ограничений по датам и времени" hidefocus>заданные</a> дни и часы. Текущее ограничение: <span id="TextRestrict"></span></label>
+	<tr height="30px"><td align="center">
+		<button onClick="num_timer_onfinish=4; Connect()" hidefocus>Установить соединение немедленно</button>
+	<tr height="100%"><td>
+		<textarea style="width:100%; height:100%;" id=Log></textarea>
 </table>
 </body>
 </html>

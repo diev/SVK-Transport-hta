@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.7.5
+	version=1.8.0
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -32,7 +32,6 @@
 var app_name = SVKTrans.applicationName.replace(/_/g,' ');
 document.title = app_name + ' - ' + SVKTrans.version;
 window.resizeTo(550, 360); // начальный размер окна приложения (выставляйте по вкусу)
-window.moveTo(10, 370); // начальное местоположение окна приложения (выставляйте по вкусу)
 
 var ini_filename = "SVKTrans.ini";      // имя ini файла
 var timeout = [];                       // массив для хранения интервалов таймеров
@@ -528,10 +527,9 @@ function FileDownload(response, race) {
 				switch (format) {
 					case "XMLEPD":
 					case "XMLESID":
-						xmlDoc.setProperty("SelectionNamespaces", 'xmlns:props="urn:cbr-ru:msg:props:v1.2"');
 						xmlDoc.load (filename);
 						if (!xmlDoc.parseError.errorCode) {
-							switch(xmlDoc.selectSingleNode("//props:MessageInfo/props:To").text){
+							switch(xmlDoc.getElementsByTagName("props:MessageInfo")[0].getElementsByTagName("props:To")[0].childNodes[0].text){
 								case INI.Account.UEO_uic_work: // Логический адрес АРМ КБР
 									WriteLog("это "+format+" документ для АРМ КБР");
 									if (INI.Paths.pay_in){
@@ -557,12 +555,11 @@ function FileDownload(response, race) {
 							return false;
 						}
 					case "RECEIPT":
-						xmlDoc.setProperty("SelectionNamespaces", 'xmlns:props="urn:cbr-ru:msg:props:v1.2"');
 						xmlDoc.load (filename);
 						if (!xmlDoc.parseError.errorCode) {
-							switch(xmlDoc.selectSingleNode("//props:MessageInfo/props:To").text){
+							switch(xmlDoc.getElementsByTagName("props:MessageInfo")[0].getElementsByTagName("props:To")[0].childNodes[0].text){
 								case INI.Account.UEO_uic_work: // Логический адрес АРМ КБР
-									var race = xmlDoc.selectSingleNode("//props:AcknowledgementInfo/props:ResultText").text.replace(/[^@]*(i\d{7}\.\d{3})[^@]*/, '$1');
+									var race = xmlDoc.getElementsByTagName("props:AcknowledgementInfo")[0].getElementsByTagName("props:ResultText")[0].childNodes[0].text.replace(/[^@]*(i\d{7}\.\d{3})[^@]*/, '$1');
 									WriteLog("это квитанция о получении платежного документа " + race);
 									if (INI.Paths.pay_kvit) {
 										FSO.MoveFile(filename, INI.Paths.pay_kvit + '\\'); // в каталог квитанций на платежные сообщения
@@ -576,6 +573,14 @@ function FileDownload(response, race) {
 										FSO.MoveFile(filename, INI.Paths.pay_test_kvit + '\\'); // в каталог квитанций на тестовые платежные сообщения
 									}else{
 										WriteLog("!Каталог квитанций на тестовые платежные сообщения НЕ ЗАДАН");
+									}
+									break;
+								case INI.Account.from_addr: // Адрес отправителя файлов статистической отчетности
+									WriteLog("это квитанция о получении сообщения в статистику");
+									if (INI.Paths.stat_info_kvit) {
+										FSO.MoveFile(filename, INI.Paths.stat_info_kvit + '\\'); // в каталог квитанций на тестовые платежные сообщения
+									}else{
+										WriteLog("!Каталог квитанций на сообщения в статистику НЕ ЗАДАН");
 									}
 									break;
 								default:
@@ -645,8 +650,8 @@ function GetList(response) {
 	// ------------------------------------------------
 	function ParseXML(filename) {
 		// ------------------------------------------------
-		function GetNodeText(node, n) {
-			if (node.selectSingleNode(n)) return node.selectSingleNode(n).text;
+		function GetNodeText(node, tagName) {
+			if (node.getElementsByTagName(tagName)[0]) return node.getElementsByTagName(tagName)[0].childNodes[0].text;
 		}
 		// ------------------------------------------------
 		function DateUTC2Local(d){
@@ -676,16 +681,15 @@ function GetList(response) {
 		}
 
 		var filelist = '';
-		xmlDoc.setProperty("SelectionNamespaces", 'xmlns:msglist="urn:cbr-ru:msg:list:v1.0"');
-		var nodes = new Enumerator(xmlDoc.selectNodes("//msglist:MessageItem"));
+		var nodes = new Enumerator(xmlDoc.getElementsByTagName("msglist:MessageItem"));
 		for (; !nodes.atEnd(); nodes.moveNext()) {
-			nodeNode = nodes.item();
+			var messageItem = nodes.item();
 			var file = {};
-			file.id = GetNodeText(nodeNode, "msglist:InstanceID");
-			file.time = DateUTC2Local(GetNodeText(nodeNode, "msglist:ReceiveTime"));
-			file.format = GetNodeText(nodeNode, "msglist:MessageFormat");
-			file.priority = GetNodeText(nodeNode, "msglist:Priority");
-			file.filename = GetNodeText(nodeNode, "msglist:LegacyTransportFileName");
+			file.id = GetNodeText(messageItem, "msglist:InstanceID");
+			file.time = DateUTC2Local(GetNodeText(messageItem, "msglist:ReceiveTime"));
+			file.format = GetNodeText(messageItem, "msglist:MessageFormat");
+			file.priority = GetNodeText(messageItem, "msglist:Priority");
+			file.filename = GetNodeText(messageItem, "msglist:LegacyTransportFileName");
 			if (file.format == 'RECEIPT') file.filename = file.id + '.RECEIPT';
 			files.push(file);
 			filelist += "\n\t" + file.time + "\t" + file.format + "\t" + file.filename;
@@ -792,10 +796,9 @@ function UploadFile(file, out_dir) {
 	//------------------------------------------------
 	// Общие заголовки
 	httpRequest.setRequestHeader("User-Agent", app_name + ' ' + SVKTrans.version); // не обязателен
-	httpRequest.setRequestHeader('AckRequest', 'true'); // бесполезен
-	// Для платежных xml сообщений заголовок 'AckRequest' игнорируется, т.к. ЦОИ анализирует одноименный нод в теле xml сообщения формируемый АРМ КБР,
+	httpRequest.setRequestHeader('Ack-Request', INI.Account.AckRequest); // для получения квитанций (только для бинарной статистики)
+	// Для платежных xml сообщений заголовок 'Ack-Request' игнорируется, т.к. ЦОИ анализирует нод 'AckRequest' в теле xml сообщения формируемый АРМ КБР,
 	// поэтому, если необходимы квитки, настройте АРМ КБР (Конфигурация - Транспортные реквизиты - Запрашивать квитанции).
-	// Для бинарной статистики реквесты просто не приходят (у нас, во всяком случае).
 	// В случае передачи любого некорректного сообщения реквест с отказом от обработки придет независимо от наличия/отсутсвия данного заголовка
 	httpRequest.setRequestHeader('If-None-Match', filename64);
 	httpRequest.setRequestHeader('Content-length', file.Size); // не обязателен

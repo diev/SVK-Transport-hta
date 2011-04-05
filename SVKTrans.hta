@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.8.0
+	version=1.8.1
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -376,13 +376,13 @@ function Connect() {
 		var chan_login = INI.Account.chan_login; // Логин канальной аутентификации
 		var chan_passw = INI.Account.chan_passw; // Пароль канальной аутентификации
 		var ras_log = store_path + 'ras.log';
-		WriteLog('Установка соединения ' + connection + '...');
+		// WriteLog('Установка соединения ' + connection + '...');
 		var ret = WshShell.Run('%COMSPEC% /c RASDIAL '+connection+' '+chan_login+' '+chan_passw+' > '+ras_log + ' 2<&1', 0, true);
+		var output=ReadTextFile(ras_log);
+		output = dos2win(output);
+		output = output.replace(/^(.)/gm, '\t$1').replace(/\r\n$/g, '');
+		WriteLog(output);
 		if (ret != 0) {
-			var output=ReadTextFile(ras_log);
-			output = dos2win(output);
-			output = output.replace(/Нажмите кнопку "Дополнительно"[^№]*/, '').replace(/Чтобы вывести сведения о данной ошибке[^№]*/, '').replace(/[\r\n]/g, '');
-			WriteLog('!Ошибка: '+ret+'\r\n'+output);
 			StartTimer(3); // повтор неудавшегося подключения
 			return;
 		}

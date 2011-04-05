@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.8.2
+	version=1.8.3
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -558,10 +558,11 @@ function FileDownload(response, race) {
 					case "RECEIPT":
 						xmlDoc.load (filename);
 						if (!xmlDoc.parseError.errorCode) {
+							var receipt_info = xmlDoc.getElementsByTagName("props:AcknowledgementInfo")[0].getElementsByTagName("props:ResultText")[0].childNodes[0].text.match(/имя файла:\s*([^\s,]+)/)[1];
+
 							switch(xmlDoc.getElementsByTagName("props:MessageInfo")[0].getElementsByTagName("props:To")[0].childNodes[0].text){
 								case INI.Account.UEO_uic_work: // Логический адрес АРМ КБР
-									var race = xmlDoc.getElementsByTagName("props:AcknowledgementInfo")[0].getElementsByTagName("props:ResultText")[0].childNodes[0].text.replace(/[^@]*(i\d{7}\.\d{3})[^@]*/, '$1');
-									WriteLog("это квитанция о получении платежного документа " + race);
+									WriteLog("это квитанция о получении платежного документа " + receipt_info);
 									if (INI.Paths.pay_kvit) {
 										FSO.MoveFile(filename, INI.Paths.pay_kvit + '\\'); // в каталог квитанций на платежные сообщения
 									}else{
@@ -569,7 +570,7 @@ function FileDownload(response, race) {
 									}
 									break;
 								case INI.Account.UEO_uic_test: // Логический тестовый адрес АРМ КБР
-									WriteLog("это квитанция о получении ТЕСТОВОГО платежного документа");
+									WriteLog("это квитанция о получении ТЕСТОВОГО платежного документа " + receipt_info);
 									if (INI.Paths.pay_test_kvit) {
 										FSO.MoveFile(filename, INI.Paths.pay_test_kvit + '\\'); // в каталог квитанций на тестовые платежные сообщения
 									}else{
@@ -577,7 +578,7 @@ function FileDownload(response, race) {
 									}
 									break;
 								case INI.Account.from_addr: // Адрес отправителя файлов статистической отчетности
-									WriteLog("это квитанция о получении сообщения в статистику");
+									WriteLog("это квитанция о получении информационного сообщения " + receipt_info);
 									if (INI.Paths.stat_info_kvit) {
 										FSO.MoveFile(filename, INI.Paths.stat_info_kvit + '\\'); // в каталог квитанций на тестовые платежные сообщения
 									}else{
@@ -585,7 +586,7 @@ function FileDownload(response, race) {
 									}
 									break;
 								default:
-									WriteLog("это квитанция о получении НЕИЗВЕСТНОГО документа");
+									WriteLog("это квитанция о получении НЕИЗВЕСТНОГО документа " + receipt_info);
 							}
 							return true;
 						} else {

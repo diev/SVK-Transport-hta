@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.8.1
+	version=1.8.2
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -521,9 +521,10 @@ function FileDelete(response, race) {
 // Обработка ответа сервера на запрос загрузки одного файла
 function FileDownload(response, race) {
 	// ------------------------------------------------
-	function CheckFile(filename, format) {
+	function CheckFile(filename, format, filesize) {
 		if (FSO.FileExists(filename)) {
-			if (FSO.GetFile(filename).Size > 0) {
+			var resultsize = FSO.GetFile(filename).Size;
+			if (resultsize == filesize) {
 				switch (format) {
 					case "XMLEPD":
 					case "XMLESID":
@@ -603,6 +604,8 @@ function FileDownload(response, race) {
 						WriteLog("!документ НЕ РАСПОЗНАН");
 						return true;
 				}
+			} else {
+				WriteLog("!размер загруженного файла ["+resultsize+"] не совпадает с заявленным ["+filesize+"]");
 			}
 		}
 		return false;
@@ -610,9 +613,10 @@ function FileDownload(response, race) {
 	// ------------------------------------------------
 	if (response.status == 200) {
 		var filespec = store_path + race.filename;
+		var filesize = Number(response.getResponseHeader("Content-Length"));
 		SaveBinaryData(filespec, response.responseBody);
 		if (INI.Paths.backup) Backup(filespec, "IN");
-		if (CheckFile(filespec, race.format)) {
+		if (CheckFile(filespec, race.format, filesize)) {
 			WriteLog(race.filename + " загружен и проверен");
 			WriteLog("Удаление с сервера " + race.filename);
 			GetXMLdata(url_get + '?Method=Delete&InstanceID=' + race.id, FileDelete, race);

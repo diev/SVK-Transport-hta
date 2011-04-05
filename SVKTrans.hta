@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.8.4
+	version=1.8.5
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -198,9 +198,13 @@ function sec2time(sec) {
 // Создание каталога (при ошибке закрывает приложение)
 function CreateFolder(path) {
 	if (!FSO.FolderExists(path)){
-		var ret = WshShell.Run('%COMSPEC% /c MD "' + path + '"', 0, true);
-		if (ret != 0) {
-			WriteLog('!Ошибка при создании каталога "' + path + '"');
+		if (WshShell.Popup("Заданный Вами в SVKTrans.ini каталог\n"+path+"\nне существует!\n\nСоздать его?", 0, "Предупреждение", 36) == 6){
+			var ret = WshShell.Run('%COMSPEC% /c MD "' + path + '"', 0, true);
+			if (ret != 0) {
+				WriteLog('!Ошибка при создании каталога "' + path + '"');
+				self.close();
+			}
+		}else{
 			self.close();
 		}
 	}

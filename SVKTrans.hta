@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.8.3
+	version=1.8.4
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -602,7 +602,7 @@ function FileDownload(response, race) {
 						}
 						return true;
 					default:
-						WriteLog("!документ НЕ РАСПОЗНАН");
+						WriteLog("!документ НЕ ОБРАБОТАН. Неизвестный MessageFormat: " + format);
 						return true;
 				}
 			} else {

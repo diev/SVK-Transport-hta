@@ -1,6 +1,6 @@
 <html>
 <head>
-<meta http-equiv=content-type content="text-html; charset=windows-1251">
+<meta http-equiv=content-type content="text-html; charset=utf-8">
 <meta http-equiv=MSThemeCompatible content=Yes>
 <hta:application
 	id=SVKTrans
@@ -12,8 +12,8 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.8.5
-	author=mozers™
+	version=1.8.6
+	author=mozersв„ў
 	email=mozers@mail.ru
 	icq=256106175
 >
@@ -31,14 +31,14 @@
 <script language="JavaScript">
 var app_name = SVKTrans.applicationName.replace(/_/g,' ');
 document.title = app_name + ' - ' + SVKTrans.version;
-window.resizeTo(550, 360); // начальный размер окна приложения (выставляйте по вкусу)
+window.resizeTo(550, 360); // РЅР°С‡Р°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РѕРєРЅР° РїСЂРёР»РѕР¶РµРЅРёСЏ (РІС‹СЃС‚Р°РІР»СЏР№С‚Рµ РїРѕ РІРєСѓСЃСѓ)
 
-var ini_filename = "SVKTrans.ini";      // имя ini файла
-var timeout = [];                       // массив для хранения интервалов таймеров
-var num_timer_onfinish;                 // номер таймера, вызвавшего срабатывание
-var current_day = new Date().getDate(); // текущий день (используется для очистки окна лога)
+var ini_filename = "SVKTrans.ini";      // РёРјСЏ ini С„Р°Р№Р»Р°
+var timeout = [];                       // РјР°СЃСЃРёРІ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РёРЅС‚РµСЂРІР°Р»РѕРІ С‚Р°Р№РјРµСЂРѕРІ
+var num_timer_onfinish;                 // РЅРѕРјРµСЂ С‚Р°Р№РјРµСЂР°, РІС‹Р·РІР°РІС€РµРіРѕ СЃСЂР°Р±Р°С‚С‹РІР°РЅРёРµ
+var current_day = new Date().getDate(); // С‚РµРєСѓС‰РёР№ РґРµРЅСЊ (РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ РѕС‡РёСЃС‚РєРё РѕРєРЅР° Р»РѕРіР°)
 
-// Объекты ActiveX
+// РћР±СЉРµРєС‚С‹ ActiveX
 var WshShell;
 var objExec;
 var FSO;
@@ -47,10 +47,10 @@ var xmlDoc;
 var httpRequest;
 ActiveX_Init();
 
-var script_path = unescape(document.URL).replace(/.*([A-Z]:\\.*)\\.*$/i, '$1'); // папка данного скрипта
-var store_path = script_path + "\\logs\\"; // каталог для сохранения log файлов
-var rest_file = script_path + "\\restrictions.dat"; // файл с периодами простоя скрипта
-var Arr_Restrictions = []; // массив со всеми датами/временем когда периодическая проверка отключена
+var script_path = unescape(document.URL).replace(/.*([A-Z]:\\.*)\\.*$/i, '$1'); // РїР°РїРєР° РґР°РЅРЅРѕРіРѕ СЃРєСЂРёРїС‚Р°
+var store_path = script_path + "\\logs\\"; // РєР°С‚Р°Р»РѕРі РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ log С„Р°Р№Р»РѕРІ
+var rest_file = script_path + "\\restrictions.dat"; // С„Р°Р№Р» СЃ РїРµСЂРёРѕРґР°РјРё РїСЂРѕСЃС‚РѕСЏ СЃРєСЂРёРїС‚Р°
+var Arr_Restrictions = []; // РјР°СЃСЃРёРІ СЃРѕ РІСЃРµРјРё РґР°С‚Р°РјРё/РІСЂРµРјРµРЅРµРј РєРѕРіРґР° РїРµСЂРёРѕРґРёС‡РµСЃРєР°СЏ РїСЂРѕРІРµСЂРєР° РѕС‚РєР»СЋС‡РµРЅР°
 
 var INI = ReadIniFile(script_path + '\\' + ini_filename);
 var url_get = 'http://' + INI.Account.svk_host + '/KbrInterface/System/Main.aspx';
@@ -67,16 +67,16 @@ InitSocket();
 //  C O M M O N
 //=====================================================
 
-// Отлов необрабатываемых ошибок
+// РћС‚Р»РѕРІ РЅРµРѕР±СЂР°Р±Р°С‚С‹РІР°РµРјС‹С… РѕС€РёР±РѕРє
 function catchError(err_text, err_src, err_line){
-	var msg_text = '!ОШИБКА СКРИПТА\nURL:\t'+err_src+'\nLine:\t'+err_line+'\nError:\t'+err_text;
+	var msg_text = '!РћРЁРР‘РљРђ РЎРљР РРџРўРђ\nURL:\t'+err_src+'\nLine:\t'+err_line+'\nError:\t'+err_text;
 	WriteLog(msg_text);
-	WriteLog('Пытаюсь продолжить...');
+	WriteLog('РџС‹С‚Р°СЋСЃСЊ РїСЂРѕРґРѕР»Р¶РёС‚СЊ...');
 	return true;
 }
 window.onerror = catchError;
 
-// Чтение текстового файла
+// Р§С‚РµРЅРёРµ С‚РµРєСЃС‚РѕРІРѕРіРѕ С„Р°Р№Р»Р°
 function ReadTextFile(filename) {
 	var text = '';
 	if (FSO.FileExists(filename)) {
@@ -90,7 +90,7 @@ function ReadTextFile(filename) {
 	return text;
 }
 
-// Запись текста в файл
+// Р—Р°РїРёСЃСЊ С‚РµРєСЃС‚Р° РІ С„Р°Р№Р»
 function WriteTextFile(filename, text) {
 	with (FSO.OpenTextFile(filename, 2, true)) {
 		Write(text);
@@ -98,7 +98,7 @@ function WriteTextFile(filename, text) {
 	}
 }
 
-// Чтение бинарного файла
+// Р§С‚РµРЅРёРµ Р±РёРЅР°СЂРЅРѕРіРѕ С„Р°Р№Р»Р°
 function ReadBinaryFile(filename) {
 	with (adoStream) {
 		Type = 1; //adTypeBinary
@@ -110,7 +110,7 @@ function ReadBinaryFile(filename) {
 	return data;
 }
 
-// Запись данных в бинарный файл
+// Р—Р°РїРёСЃСЊ РґР°РЅРЅС‹С… РІ Р±РёРЅР°СЂРЅС‹Р№ С„Р°Р№Р»
 function SaveBinaryData(filename, byteArray) {
 	var adSaveCreateOverWrite = 2;
 	var Stream = new ActiveXObject("ADODB.Stream");
@@ -123,7 +123,7 @@ function SaveBinaryData(filename, byteArray) {
 	}
 }
 
-// Кодирование в base64
+// РљРѕРґРёСЂРѕРІР°РЅРёРµ РІ base64
 function utf8base64(str) {
 	function utf8(str) {
 		with (adoStream) {
@@ -133,7 +133,7 @@ function utf8base64(str) {
 			WriteText(str);
 			Position = 0;
 			Type = 1; // adTypeBinary
-			Read(3); // BOM нам не нужен
+			Read(3); // BOM РЅР°Рј РЅРµ РЅСѓР¶РµРЅ
 			var data = Read();
 			Close();
 		}
@@ -146,7 +146,7 @@ function utf8base64(str) {
 	}
 }
 
-// Чтение ini файла в объект (откуда затем берутся значения ключей)
+// Р§С‚РµРЅРёРµ ini С„Р°Р№Р»Р° РІ РѕР±СЉРµРєС‚ (РѕС‚РєСѓРґР° Р·Р°С‚РµРј Р±РµСЂСѓС‚СЃСЏ Р·РЅР°С‡РµРЅРёСЏ РєР»СЋС‡РµР№)
 function ReadIniFile(ini_file) {
 	if (FSO.FileExists(ini_file)) {
 		if (FSO.GetFile(ini_file).Size > 0) {
@@ -173,7 +173,7 @@ function ReadIniFile(ini_file) {
 	}
 }
 
-// Возвращает дату и время в удобоваримом виде (как объект)
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР°С‚Сѓ Рё РІСЂРµРјСЏ РІ СѓРґРѕР±РѕРІР°СЂРёРјРѕРј РІРёРґРµ (РєР°Рє РѕР±СЉРµРєС‚)
 function objDate(obj){
 	function format(x){return (x < 10) ? ('0' + x) : String(x);}
 	var datetime = {}; var d;
@@ -187,7 +187,7 @@ function objDate(obj){
 	return datetime;
 }
 
-// Переводит кол-во секунд во время в виде "mm:ss"
+// РџРµСЂРµРІРѕРґРёС‚ РєРѕР»-РІРѕ СЃРµРєСѓРЅРґ РІРѕ РІСЂРµРјСЏ РІ РІРёРґРµ "mm:ss"
 function sec2time(sec) {
 	function format(x) {return (x < 10) ? ('0' + x) : x;}
 	var m = format(Math.floor(sec/60));
@@ -195,13 +195,13 @@ function sec2time(sec) {
 	return m + ':' + s;
 }
 
-// Создание каталога (при ошибке закрывает приложение)
+// РЎРѕР·РґР°РЅРёРµ РєР°С‚Р°Р»РѕРіР° (РїСЂРё РѕС€РёР±РєРµ Р·Р°РєСЂС‹РІР°РµС‚ РїСЂРёР»РѕР¶РµРЅРёРµ)
 function CreateFolder(path) {
 	if (!FSO.FolderExists(path)){
-		if (WshShell.Popup("Заданный Вами в SVKTrans.ini каталог\n"+path+"\nне существует!\n\nСоздать его?", 0, "Предупреждение", 36) == 6){
+		if (WshShell.Popup("Р—Р°РґР°РЅРЅС‹Р№ Р’Р°РјРё РІ SVKTrans.ini РєР°С‚Р°Р»РѕРі\n"+path+"\nРЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚!\n\nРЎРѕР·РґР°С‚СЊ РµРіРѕ?", 0, "РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ", 36) == 6){
 			var ret = WshShell.Run('%COMSPEC% /c MD "' + path + '"', 0, true);
 			if (ret != 0) {
-				WriteLog('!Ошибка при создании каталога "' + path + '"');
+				WriteLog('!РћС€РёР±РєР° РїСЂРё СЃРѕР·РґР°РЅРёРё РєР°С‚Р°Р»РѕРіР° "' + path + '"');
 				self.close();
 			}
 		}else{
@@ -210,7 +210,7 @@ function CreateFolder(path) {
 	}
 }
 
-// Создание всех каталогов приема/выгрузки сообщений
+// РЎРѕР·РґР°РЅРёРµ РІСЃРµС… РєР°С‚Р°Р»РѕРіРѕРІ РїСЂРёРµРјР°/РІС‹РіСЂСѓР·РєРё СЃРѕРѕР±С‰РµРЅРёР№
 function MakeAllDir() {
 	CreateFolder(store_path);
 	if (INI.Paths.pay_in) CreateFolder(INI.Paths.pay_in);
@@ -224,7 +224,7 @@ function MakeAllDir() {
 	if (INI.Paths.backup) CreateFolder(INI.Paths.backup);
 }
 
-// Бекап получаемых|сохраняемых файлов (direction = IN|OUT)
+// Р‘РµРєР°Рї РїРѕР»СѓС‡Р°РµРјС‹С…|СЃРѕС…СЂР°РЅСЏРµРјС‹С… С„Р°Р№Р»РѕРІ (direction = IN|OUT)
 function Backup(filename, direction) {
 	var dt = objDate();
 	var backup_dir = INI.Paths.backup + '\\' + direction + '\\' + dt.year + '\\' + dt.month + '\\' + dt.day;
@@ -232,7 +232,7 @@ function Backup(filename, direction) {
 	FSO.CopyFile(filename, backup_dir + "\\", true);
 }
 
-// Запись лога в textarea и в файл (Предупреждения выводятся в MsgBox и отправляются администратору)
+// Р—Р°РїРёСЃСЊ Р»РѕРіР° РІ textarea Рё РІ С„Р°Р№Р» (РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёСЏ РІС‹РІРѕРґСЏС‚СЃСЏ РІ MsgBox Рё РѕС‚РїСЂР°РІР»СЏСЋС‚СЃСЏ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂСѓ)
 function WriteLog(message) {
 	var dt = objDate();
 	var log_message = '['+dt.hours+':'+dt.min+'.'+dt.sec+'] ' + message + '\r\n';
@@ -249,15 +249,15 @@ function WriteLog(message) {
 	var file = FSO.OpenTextFile(logfilename, 8, true);
 	file.Write(log_message);
 	file.Close();
-	if (/^!/.test(message)) { // Если сообщение начинается с восклицательного знака, то выводим MsgBox
+	if (/^!/.test(message)) { // Р•СЃР»Рё СЃРѕРѕР±С‰РµРЅРёРµ РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ РІРѕСЃРєР»РёС†Р°С‚РµР»СЊРЅРѕРіРѕ Р·РЅР°РєР°, С‚Рѕ РІС‹РІРѕРґРёРј MsgBox
 		// WshShell.Popup(message, 5, "SVK Transport ERROR", 48);
-		if (INI.Account.messages_recipient){ // получатель сообщения о ошибке скрипта
+		if (INI.Account.messages_recipient){ // РїРѕР»СѓС‡Р°С‚РµР»СЊ СЃРѕРѕР±С‰РµРЅРёСЏ Рѕ РѕС€РёР±РєРµ СЃРєСЂРёРїС‚Р°
 			WshShell.Run('net send ' + INI.Account.messages_recipient + ' ' + message, 6, false);
 		}
 	}
 }
 
-// Читаем лог из файла в textarea (при старте приложения)
+// Р§РёС‚Р°РµРј Р»РѕРі РёР· С„Р°Р№Р»Р° РІ textarea (РїСЂРё СЃС‚Р°СЂС‚Рµ РїСЂРёР»РѕР¶РµРЅРёСЏ)
 function ReadLog() {
 	var dt = objDate();
 	logfilename = store_path + dt.year + dt.month + dt.day + ".log";
@@ -272,7 +272,7 @@ function ReadLog() {
 	}
 }
 
-// Перекодировщик текста dos866 -> win1251
+// РџРµСЂРµРєРѕРґРёСЂРѕРІС‰РёРє С‚РµРєСЃС‚Р° dos866 -> win1251
 function dos2win(text_in){
 	with (adoStream) {
 		Open();
@@ -288,14 +288,14 @@ function dos2win(text_in){
 	return text_out;
 }
 
-// Соединение с telnet-сервером
+// РЎРѕРµРґРёРЅРµРЅРёРµ СЃ telnet-СЃРµСЂРІРµСЂРѕРј
 function TelnetConnect() {
 	with (objSocket) {
 		DoTelnetEmulation = true;
 		TelnetEmulation = "TTY";
-		TimeOut = 10000; // время ожидания ответа сервера (мсек)
+		TimeOut = 10000; // РІСЂРµРјСЏ РѕР¶РёРґР°РЅРёСЏ РѕС‚РІРµС‚Р° СЃРµСЂРІРµСЂР° (РјСЃРµРє)
 		Host = INI.Account.telnet_host;
-		var try_count = 4; // число попыток подключения
+		var try_count = 4; // С‡РёСЃР»Рѕ РїРѕРїС‹С‚РѕРє РїРѕРґРєР»СЋС‡РµРЅРёСЏ
 
 		do {
 			try {
@@ -318,26 +318,26 @@ function TelnetConnect() {
 //  T I M E R   C O N T R O L
 //=====================================================
 
-// Сброс таймера
+// РЎР±СЂРѕСЃ С‚Р°Р№РјРµСЂР°
 function InitTimer(num) {
 	TimerHidden[num].value = timeout[num];
 	TimerVisible[num].value = sec2time(TimerHidden[num].value);
 	TimerVisible[num].disabled = true;
 }
 
-// Сброс всех таймеров
+// РЎР±СЂРѕСЃ РІСЃРµС… С‚Р°Р№РјРµСЂРѕРІ
 function InitAllTimers() {
 	for (var i=0; i<TimerVisible.length; i++) {
 		InitTimer(i);
 	}
 }
 
-// Разрешаем таймеру уменьшать оставшееся время
+// Р Р°Р·СЂРµС€Р°РµРј С‚Р°Р№РјРµСЂСѓ СѓРјРµРЅСЊС€Р°С‚СЊ РѕСЃС‚Р°РІС€РµРµСЃСЏ РІСЂРµРјСЏ
 function StartTimer(num) {
 	TimerVisible[num].disabled = false;
 }
 
-// Каждую секунду уменьшает на 1 показания всех незадизабленых таймеров и, если значение одного из них подошло к 0, запускает соответствующую таймеру функцию
+// РљР°Р¶РґСѓСЋ СЃРµРєСѓРЅРґСѓ СѓРјРµРЅСЊС€Р°РµС‚ РЅР° 1 РїРѕРєР°Р·Р°РЅРёСЏ РІСЃРµС… РЅРµР·Р°РґРёР·Р°Р±Р»РµРЅС‹С… С‚Р°Р№РјРµСЂРѕРІ Рё, РµСЃР»Рё Р·РЅР°С‡РµРЅРёРµ РѕРґРЅРѕРіРѕ РёР· РЅРёС… РїРѕРґРѕС€Р»Рѕ Рє 0, Р·Р°РїСѓСЃРєР°РµС‚ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰СѓСЋ С‚Р°Р№РјРµСЂСѓ С„СѓРЅРєС†РёСЋ
 function ShowTimers() {
 	CheckRestrictions();
 	for (var num=0; num<TimerHidden.length; num++) {
@@ -345,12 +345,12 @@ function ShowTimers() {
 			TimerHidden[num].value--;
 			TimerVisible[num].value = sec2time(TimerHidden[num].value);
 			if (TimerHidden[num].value == '0') {
-				// Один из таймеров досчитал до 0
+				// РћРґРёРЅ РёР· С‚Р°Р№РјРµСЂРѕРІ РґРѕСЃС‡РёС‚Р°Р» РґРѕ 0
 				InitTimer(num);
 				num_timer_onfinish = num;
-				if (num == 1) { // Отправка исходящих сообщений;
+				if (num == 1) { // РћС‚РїСЂР°РІРєР° РёСЃС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёР№;
 					if (CheckOutbox()) Connect();
-					StartTimer(1); // проверка наличия исходящих сообщений
+					StartTimer(1); // РїСЂРѕРІРµСЂРєР° РЅР°Р»РёС‡РёСЏ РёСЃС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёР№
 				} else {
 					Connect();
 				}
@@ -360,56 +360,56 @@ function ShowTimers() {
 	setTimeout(ShowTimers, 1000);
 }
 
-// Подключение
+// РџРѕРґРєР»СЋС‡РµРЅРёРµ
 function Connect() {
 	function EventDescription() {
 		switch(num_timer_onfinish) {
-			case 0: return '> Проверка по таймауту';
-			case 1: return '> Отправка исходящих сообщений';
-			case 2: return '> Запрос ответа';
-			case 3: return '> Повтор неудавшегося подключения';
-			case 4: return '> Запуск вручную';
-			case 5: return '> Запуск по окончанию ограничения';
-			case 6: return '> Запуск при старте приложения';
+			case 0: return '> РџСЂРѕРІРµСЂРєР° РїРѕ С‚Р°Р№РјР°СѓС‚Сѓ';
+			case 1: return '> РћС‚РїСЂР°РІРєР° РёСЃС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёР№';
+			case 2: return '> Р—Р°РїСЂРѕСЃ РѕС‚РІРµС‚Р°';
+			case 3: return '> РџРѕРІС‚РѕСЂ РЅРµСѓРґР°РІС€РµРіРѕСЃСЏ РїРѕРґРєР»СЋС‡РµРЅРёСЏ';
+			case 4: return '> Р—Р°РїСѓСЃРє РІСЂСѓС‡РЅСѓСЋ';
+			case 5: return '> Р—Р°РїСѓСЃРє РїРѕ РѕРєРѕРЅС‡Р°РЅРёСЋ РѕРіСЂР°РЅРёС‡РµРЅРёСЏ';
+			case 6: return '> Р—Р°РїСѓСЃРє РїСЂРё СЃС‚Р°СЂС‚Рµ РїСЂРёР»РѕР¶РµРЅРёСЏ';
 		}
 	}
 	InitAllTimers();
 	WriteLog(EventDescription());
-	var connection = INI.Account.connection; // Имя dialup соединения с СВК 
-	if (connection) { // дозвон осуществляется только при наличии заданного имени dialup соединения
-		var chan_login = INI.Account.chan_login; // Логин канальной аутентификации
-		var chan_passw = INI.Account.chan_passw; // Пароль канальной аутентификации
+	var connection = INI.Account.connection; // РРјСЏ dialup СЃРѕРµРґРёРЅРµРЅРёСЏ СЃ РЎР’Рљ 
+	if (connection) { // РґРѕР·РІРѕРЅ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚СЃСЏ С‚РѕР»СЊРєРѕ РїСЂРё РЅР°Р»РёС‡РёРё Р·Р°РґР°РЅРЅРѕРіРѕ РёРјРµРЅРё dialup СЃРѕРµРґРёРЅРµРЅРёСЏ
+		var chan_login = INI.Account.chan_login; // Р›РѕРіРёРЅ РєР°РЅР°Р»СЊРЅРѕР№ Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёРё
+		var chan_passw = INI.Account.chan_passw; // РџР°СЂРѕР»СЊ РєР°РЅР°Р»СЊРЅРѕР№ Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёРё
 		var ras_log = store_path + 'ras.log';
-		// WriteLog('Установка соединения ' + connection + '...');
+		// WriteLog('РЈСЃС‚Р°РЅРѕРІРєР° СЃРѕРµРґРёРЅРµРЅРёСЏ ' + connection + '...');
 		var ret = WshShell.Run('%COMSPEC% /c RASDIAL '+connection+' '+chan_login+' '+chan_passw+' > '+ras_log + ' 2<&1', 0, true);
 		var output=ReadTextFile(ras_log);
 		output = dos2win(output);
 		output = output.replace(/^(.)/gm, '\t$1').replace(/\r\n$/g, '');
 		WriteLog(output);
 		if (ret != 0) {
-			StartTimer(3); // повтор неудавшегося подключения
+			StartTimer(3); // РїРѕРІС‚РѕСЂ РЅРµСѓРґР°РІС€РµРіРѕСЃСЏ РїРѕРґРєР»СЋС‡РµРЅРёСЏ
 			return;
 		}
 	}
-	// WriteLog('Соединение установлено');
+	// WriteLog('РЎРѕРµРґРёРЅРµРЅРёРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕ');
 	if (INI.Account.telnet_host) {
 		if (!TelnetConnect()) {
-			WriteLog('!Ошибка telnet аутентификации');
-			StartTimer(3); // повтор неудавшегося подключения
+			WriteLog('!РћС€РёР±РєР° telnet Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёРё');
+			StartTimer(3); // РїРѕРІС‚РѕСЂ РЅРµСѓРґР°РІС€РµРіРѕСЃСЏ РїРѕРґРєР»СЋС‡РµРЅРёСЏ
 			return;
 		} else {
-			WriteLog('Telnet аутентификация пройдена');
+			WriteLog('Telnet Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёСЏ РїСЂРѕР№РґРµРЅР°');
 		}
 	}
 	Download();
 	Upload();
 	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-		StartTimer(0); // периодической проверка
+		StartTimer(0); // РїРµСЂРёРѕРґРёС‡РµСЃРєРѕР№ РїСЂРѕРІРµСЂРєР°
 	}
-	StartTimer(1); // проверка наличия исходящих сообщений
+	StartTimer(1); // РїСЂРѕРІРµСЂРєР° РЅР°Р»РёС‡РёСЏ РёСЃС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёР№
 }
 
-// Проверка наличия исходящих сообщений
+// РџСЂРѕРІРµСЂРєР° РЅР°Р»РёС‡РёСЏ РёСЃС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёР№
 function CheckOutbox() {
 	if (INI.Paths.pay_out) {
 		if (FSO.GetFolder(INI.Paths.pay_out).Files.Count > 0) return true;
@@ -423,20 +423,20 @@ function CheckOutbox() {
 	return false;
 }
 
-// Проверка ограничений на дату/время
+// РџСЂРѕРІРµСЂРєР° РѕРіСЂР°РЅРёС‡РµРЅРёР№ РЅР° РґР°С‚Сѓ/РІСЂРµРјСЏ
 function CheckRestrictions(){
 	function GetRestrictions(){
 		if (Arr_Restrictions.length > 0) {
 			var d = new Date();
 			for (var i=0; i<Arr_Restrictions.length; i++) {
-				// День недели: Пн, Вт, Ср, Чт, Пт, Сб, Вс
+				// Р”РµРЅСЊ РЅРµРґРµР»Рё: РџРЅ, Р’С‚, РЎСЂ, Р§С‚, РџС‚, РЎР±, Р’СЃ
 				var re = new RegExp(Arr_Restrictions[i], "i");
-				if (re.test("ВсПнВтСрЧтПтСб")) {
+				if (re.test("Р’СЃРџРЅР’С‚РЎСЂР§С‚РџС‚РЎР±")) {
 					if (d.getDay() == RegExp.lastIndex/2 - 1) {
 						return Arr_Restrictions[i];
 					}
 				}
-				// Дневной интервал вида 17.04.2010-18.04.2010
+				// Р”РЅРµРІРЅРѕР№ РёРЅС‚РµСЂРІР°Р» РІРёРґР° 17.04.2010-18.04.2010
 				if (/(\d\d).(\d\d).(\d\d\d\d)\-(\d\d).(\d\d).(\d\d\d\d)/.test(Arr_Restrictions[i])) {
 					var date_start = new Date(RegExp.$3, RegExp.$2-1, RegExp.$1);
 					var date_end = new Date(RegExp.$6, RegExp.$5-1, RegExp.$4);
@@ -444,13 +444,13 @@ function CheckRestrictions(){
 						return Arr_Restrictions[i];
 					}
 				}
-				// Дата вида 01.05.2010
+				// Р”Р°С‚Р° РІРёРґР° 01.05.2010
 				if (/(\d\d).(\d\d).(\d\d\d\d)/.test(Arr_Restrictions[i])) {
 					if ( (d.getFullYear() == RegExp.$3) && (d.getMonth() == RegExp.$2-1 ) && (d.getDate() == RegExp.$1) ) {
 						return Arr_Restrictions[i];
 					}
 				}
-				// Временной интервал вида 00:00-08:30
+				// Р’СЂРµРјРµРЅРЅРѕР№ РёРЅС‚РµСЂРІР°Р» РІРёРґР° 00:00-08:30
 				if (/(\d\d):(\d\d)\-(\d\d):(\d\d)/.test(Arr_Restrictions[i])) {
 					var time_start = Number(RegExp.$1)*60 + Number(RegExp.$2);
 					var time_end = Number(RegExp.$3)*60 + Number(RegExp.$4);
@@ -468,12 +468,12 @@ function CheckRestrictions(){
 	if (current_restriction == '') {
 		if (TextRestrict.style.color == "red") {
 			TextRestrict.style.color = "highlight";
-			TextRestrict.innerText = "нет";
+			TextRestrict.innerText = "РЅРµС‚";
 			num_timer_onfinish = 5;
 			Connect();
 		}
 		TextRestrict.style.color = "highlight";
-		TextRestrict.innerText = "нет";
+		TextRestrict.innerText = "РЅРµС‚";
 	} else {
 		if (TextRestrict.style.color != "red") {
 			if (ChkRestrictions.checked) InitTimer(0);
@@ -487,13 +487,13 @@ function CheckRestrictions(){
 //  D O W N L O A D
 //=====================================================
 
-// Запрос на загрузку данных с заданного URL
-// Входные параметры: (url; функция, которая будет вызвана по окончании запроса; параметр этой функции)
+// Р—Р°РїСЂРѕСЃ РЅР° Р·Р°РіСЂСѓР·РєСѓ РґР°РЅРЅС‹С… СЃ Р·Р°РґР°РЅРЅРѕРіРѕ URL
+// Р’С…РѕРґРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹: (url; С„СѓРЅРєС†РёСЏ, РєРѕС‚РѕСЂР°СЏ Р±СѓРґРµС‚ РІС‹Р·РІР°РЅР° РїРѕ РѕРєРѕРЅС‡Р°РЅРёРё Р·Р°РїСЂРѕСЃР°; РїР°СЂР°РјРµС‚СЂ СЌС‚РѕР№ С„СѓРЅРєС†РёРё)
 function GetXMLdata(url, func, param) {
 	httpRequest.onreadystatechange = function() {
 		if (httpRequest.readyState == 4) {
 			if (httpRequest.status == 401) {
-				WriteLog('!Ответ сервера: 401 Unauthorized');
+				WriteLog('!РћС‚РІРµС‚ СЃРµСЂРІРµСЂР°: 401 Unauthorized');
 			}else{
 				func(httpRequest, param);
 			}
@@ -505,24 +505,24 @@ function GetXMLdata(url, func, param) {
 	try {
 		httpRequest.send(null);
 	} catch(e) {
-		// При отсутствии списка файлов на сервере возникает ошибка - это нормально (по мнению ЦБ)
-		if (!/Method=List/.test(url)) { // не будем ее показывать, дабы не пугать пользователя
-			WriteLog("!Ошибка при открытии " + url);
+		// РџСЂРё РѕС‚СЃСѓС‚СЃС‚РІРёРё СЃРїРёСЃРєР° С„Р°Р№Р»РѕРІ РЅР° СЃРµСЂРІРµСЂРµ РІРѕР·РЅРёРєР°РµС‚ РѕС€РёР±РєР° - СЌС‚Рѕ РЅРѕСЂРјР°Р»СЊРЅРѕ (РїРѕ РјРЅРµРЅРёСЋ Р¦Р‘)
+		if (!/Method=List/.test(url)) { // РЅРµ Р±СѓРґРµРј РµРµ РїРѕРєР°Р·С‹РІР°С‚СЊ, РґР°Р±С‹ РЅРµ РїСѓРіР°С‚СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+			WriteLog("!РћС€РёР±РєР° РїСЂРё РѕС‚РєСЂС‹С‚РёРё " + url);
 		}
 	}
 	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-		StartTimer(0); // периодической проверка
+		StartTimer(0); // РїРµСЂРёРѕРґРёС‡РµСЃРєРѕР№ РїСЂРѕРІРµСЂРєР°
 	}
-	StartTimer(1); // проверка наличия исходящих сообщений
-	if (num_timer_onfinish == 2) StartTimer(2); // запрос ответа
+	StartTimer(1); // РїСЂРѕРІРµСЂРєР° РЅР°Р»РёС‡РёСЏ РёСЃС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёР№
+	if (num_timer_onfinish == 2) StartTimer(2); // Р·Р°РїСЂРѕСЃ РѕС‚РІРµС‚Р°
 }
 
-// Обработка ответа сервера на запрос удаления одного файла
+// РћР±СЂР°Р±РѕС‚РєР° РѕС‚РІРµС‚Р° СЃРµСЂРІРµСЂР° РЅР° Р·Р°РїСЂРѕСЃ СѓРґР°Р»РµРЅРёСЏ РѕРґРЅРѕРіРѕ С„Р°Р№Р»Р°
 function FileDelete(response, race) {
-	if (response.status != 200) WriteLog("!Ошибка при удалении "+race.filename+": " + response.statusText);
+	if (response.status != 200) WriteLog("!РћС€РёР±РєР° РїСЂРё СѓРґР°Р»РµРЅРёРё "+race.filename+": " + response.statusText);
 }
 
-// Обработка ответа сервера на запрос загрузки одного файла
+// РћР±СЂР°Р±РѕС‚РєР° РѕС‚РІРµС‚Р° СЃРµСЂРІРµСЂР° РЅР° Р·Р°РїСЂРѕСЃ Р·Р°РіСЂСѓР·РєРё РѕРґРЅРѕРіРѕ С„Р°Р№Р»Р°
 function FileDownload(response, race) {
 	// ------------------------------------------------
 	function CheckFile(filename, format, filesize) {
@@ -535,82 +535,82 @@ function FileDownload(response, race) {
 						xmlDoc.load (filename);
 						if (!xmlDoc.parseError.errorCode) {
 							switch(xmlDoc.getElementsByTagName("props:MessageInfo")[0].getElementsByTagName("props:To")[0].childNodes[0].text){
-								case INI.Account.UEO_uic_work: // Логический адрес АРМ КБР
-									WriteLog("это "+format+" документ для АРМ КБР");
+								case INI.Account.UEO_uic_work: // Р›РѕРіРёС‡РµСЃРєРёР№ Р°РґСЂРµСЃ РђР Рњ РљР‘Р 
+									WriteLog("СЌС‚Рѕ "+format+" РґРѕРєСѓРјРµРЅС‚ РґР»СЏ РђР Рњ РљР‘Р ");
 									if (INI.Paths.pay_in){
-										FSO.MoveFile(filename, INI.Paths.pay_in + '\\'); // в каталог входящих платежных сообщений
+										FSO.MoveFile(filename, INI.Paths.pay_in + '\\'); // РІ РєР°С‚Р°Р»РѕРі РІС…РѕРґСЏС‰РёС… РїР»Р°С‚РµР¶РЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№
 									}else{
-										WriteLog("!Каталог входящих платежных сообщений НЕ ЗАДАН");
+										WriteLog("!РљР°С‚Р°Р»РѕРі РІС…РѕРґСЏС‰РёС… РїР»Р°С‚РµР¶РЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№ РќР• Р—РђР”РђРќ");
 									}
 									break;
-								case INI.Account.UEO_uic_test: // Логический тестовый адрес АРМ КБР
-									WriteLog("это ТЕСТОВЫЙ "+format+" документ АРМ КБР");
+								case INI.Account.UEO_uic_test: // Р›РѕРіРёС‡РµСЃРєРёР№ С‚РµСЃС‚РѕРІС‹Р№ Р°РґСЂРµСЃ РђР Рњ РљР‘Р 
+									WriteLog("СЌС‚Рѕ РўР•РЎРўРћР’Р«Р™ "+format+" РґРѕРєСѓРјРµРЅС‚ РђР Рњ РљР‘Р ");
 									if (INI.Paths.pay_test_in) {
-										FSO.MoveFile(filename, INI.Paths.pay_test_in + '\\');  // Каталог входящих тестовых платежных сообщений
+										FSO.MoveFile(filename, INI.Paths.pay_test_in + '\\');  // РљР°С‚Р°Р»РѕРі РІС…РѕРґСЏС‰РёС… С‚РµСЃС‚РѕРІС‹С… РїР»Р°С‚РµР¶РЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№
 									}else{
-										WriteLog("!Каталог входящих тестовых платежных сообщений НЕ ЗАДАН");
+										WriteLog("!РљР°С‚Р°Р»РѕРі РІС…РѕРґСЏС‰РёС… С‚РµСЃС‚РѕРІС‹С… РїР»Р°С‚РµР¶РЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№ РќР• Р—РђР”РђРќ");
 									}
 									break;
 								default:
-									WriteLog("!это "+format+" документ НЕ АРМ КБР");
+									WriteLog("!СЌС‚Рѕ "+format+" РґРѕРєСѓРјРµРЅС‚ РќР• РђР Рњ РљР‘Р ");
 							}
 							return true;
 						} else {
-							WriteLog("!не читаемый "+format+" документ");
+							WriteLog("!РЅРµ С‡РёС‚Р°РµРјС‹Р№ "+format+" РґРѕРєСѓРјРµРЅС‚");
 							return false;
 						}
 					case "RECEIPT":
 						xmlDoc.load (filename);
 						if (!xmlDoc.parseError.errorCode) {
-							var receipt_info = xmlDoc.getElementsByTagName("props:AcknowledgementInfo")[0].getElementsByTagName("props:ResultText")[0].childNodes[0].text.match(/имя файла:\s*([^\s,]+)/)[1];
+							var receipt_info = xmlDoc.getElementsByTagName("props:AcknowledgementInfo")[0].getElementsByTagName("props:ResultText")[0].childNodes[0].text.match(/РёРјСЏ С„Р°Р№Р»Р°:\s*([^\s,]+)/)[1];
 
 							switch(xmlDoc.getElementsByTagName("props:MessageInfo")[0].getElementsByTagName("props:To")[0].childNodes[0].text){
-								case INI.Account.UEO_uic_work: // Логический адрес АРМ КБР
-									WriteLog("это квитанция о получении платежного документа " + receipt_info);
+								case INI.Account.UEO_uic_work: // Р›РѕРіРёС‡РµСЃРєРёР№ Р°РґСЂРµСЃ РђР Рњ РљР‘Р 
+									WriteLog("СЌС‚Рѕ РєРІРёС‚Р°РЅС†РёСЏ Рѕ РїРѕР»СѓС‡РµРЅРёРё РїР»Р°С‚РµР¶РЅРѕРіРѕ РґРѕРєСѓРјРµРЅС‚Р° " + receipt_info);
 									if (INI.Paths.pay_kvit) {
-										FSO.MoveFile(filename, INI.Paths.pay_kvit + '\\'); // в каталог квитанций на платежные сообщения
+										FSO.MoveFile(filename, INI.Paths.pay_kvit + '\\'); // РІ РєР°С‚Р°Р»РѕРі РєРІРёС‚Р°РЅС†РёР№ РЅР° РїР»Р°С‚РµР¶РЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ
 									}else{
-										WriteLog("!Каталог квитанций на платежные сообщения НЕ ЗАДАН");
+										WriteLog("!РљР°С‚Р°Р»РѕРі РєРІРёС‚Р°РЅС†РёР№ РЅР° РїР»Р°С‚РµР¶РЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ РќР• Р—РђР”РђРќ");
 									}
 									break;
-								case INI.Account.UEO_uic_test: // Логический тестовый адрес АРМ КБР
-									WriteLog("это квитанция о получении ТЕСТОВОГО платежного документа " + receipt_info);
+								case INI.Account.UEO_uic_test: // Р›РѕРіРёС‡РµСЃРєРёР№ С‚РµСЃС‚РѕРІС‹Р№ Р°РґСЂРµСЃ РђР Рњ РљР‘Р 
+									WriteLog("СЌС‚Рѕ РєРІРёС‚Р°РЅС†РёСЏ Рѕ РїРѕР»СѓС‡РµРЅРёРё РўР•РЎРўРћР’РћР“Рћ РїР»Р°С‚РµР¶РЅРѕРіРѕ РґРѕРєСѓРјРµРЅС‚Р° " + receipt_info);
 									if (INI.Paths.pay_test_kvit) {
-										FSO.MoveFile(filename, INI.Paths.pay_test_kvit + '\\'); // в каталог квитанций на тестовые платежные сообщения
+										FSO.MoveFile(filename, INI.Paths.pay_test_kvit + '\\'); // РІ РєР°С‚Р°Р»РѕРі РєРІРёС‚Р°РЅС†РёР№ РЅР° С‚РµСЃС‚РѕРІС‹Рµ РїР»Р°С‚РµР¶РЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ
 									}else{
-										WriteLog("!Каталог квитанций на тестовые платежные сообщения НЕ ЗАДАН");
+										WriteLog("!РљР°С‚Р°Р»РѕРі РєРІРёС‚Р°РЅС†РёР№ РЅР° С‚РµСЃС‚РѕРІС‹Рµ РїР»Р°С‚РµР¶РЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ РќР• Р—РђР”РђРќ");
 									}
 									break;
-								case INI.Account.from_addr: // Адрес отправителя файлов статистической отчетности
-									WriteLog("это квитанция о получении информационного сообщения " + receipt_info);
+								case INI.Account.from_addr: // РђРґСЂРµСЃ РѕС‚РїСЂР°РІРёС‚РµР»СЏ С„Р°Р№Р»РѕРІ СЃС‚Р°С‚РёСЃС‚РёС‡РµСЃРєРѕР№ РѕС‚С‡РµС‚РЅРѕСЃС‚Рё
+									WriteLog("СЌС‚Рѕ РєРІРёС‚Р°РЅС†РёСЏ Рѕ РїРѕР»СѓС‡РµРЅРёРё РёРЅС„РѕСЂРјР°С†РёРѕРЅРЅРѕРіРѕ СЃРѕРѕР±С‰РµРЅРёСЏ " + receipt_info);
 									if (INI.Paths.stat_info_kvit) {
-										FSO.MoveFile(filename, INI.Paths.stat_info_kvit + '\\'); // в каталог квитанций на тестовые платежные сообщения
+										FSO.MoveFile(filename, INI.Paths.stat_info_kvit + '\\'); // РІ РєР°С‚Р°Р»РѕРі РєРІРёС‚Р°РЅС†РёР№ РЅР° С‚РµСЃС‚РѕРІС‹Рµ РїР»Р°С‚РµР¶РЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ
 									}else{
-										WriteLog("!Каталог квитанций на сообщения в статистику НЕ ЗАДАН");
+										WriteLog("!РљР°С‚Р°Р»РѕРі РєРІРёС‚Р°РЅС†РёР№ РЅР° СЃРѕРѕР±С‰РµРЅРёСЏ РІ СЃС‚Р°С‚РёСЃС‚РёРєСѓ РќР• Р—РђР”РђРќ");
 									}
 									break;
 								default:
-									WriteLog("это квитанция о получении НЕИЗВЕСТНОГО документа " + receipt_info);
+									WriteLog("СЌС‚Рѕ РєРІРёС‚Р°РЅС†РёСЏ Рѕ РїРѕР»СѓС‡РµРЅРёРё РќР•РР—Р’Р•РЎРўРќРћР“Рћ РґРѕРєСѓРјРµРЅС‚Р° " + receipt_info);
 							}
 							return true;
 						} else {
-							WriteLog("!не читаемая квитанция о получении документа");
+							WriteLog("!РЅРµ С‡РёС‚Р°РµРјР°СЏ РєРІРёС‚Р°РЅС†РёСЏ Рѕ РїРѕР»СѓС‡РµРЅРёРё РґРѕРєСѓРјРµРЅС‚Р°");
 							return true;
 						}
 					case "INFO":
-						WriteLog("это документ ПТК ПСД");
+						WriteLog("СЌС‚Рѕ РґРѕРєСѓРјРµРЅС‚ РџРўРљ РџРЎР”");
 						if (INI.Paths.stat_info_in) {
-							FSO.MoveFile(filename, INI.Paths.stat_info_in + '\\'); // в каталог входящих информационных и сообщений из статистики
+							FSO.MoveFile(filename, INI.Paths.stat_info_in + '\\'); // РІ РєР°С‚Р°Р»РѕРі РІС…РѕРґСЏС‰РёС… РёРЅС„РѕСЂРјР°С†РёРѕРЅРЅС‹С… Рё СЃРѕРѕР±С‰РµРЅРёР№ РёР· СЃС‚Р°С‚РёСЃС‚РёРєРё
 						}else{
-							WriteLog("!Каталог входящих информационных и сообщений из статистики НЕ ЗАДАН");
+							WriteLog("!РљР°С‚Р°Р»РѕРі РІС…РѕРґСЏС‰РёС… РёРЅС„РѕСЂРјР°С†РёРѕРЅРЅС‹С… Рё СЃРѕРѕР±С‰РµРЅРёР№ РёР· СЃС‚Р°С‚РёСЃС‚РёРєРё РќР• Р—РђР”РђРќ");
 						}
 						return true;
 					default:
-						WriteLog("!документ НЕ ОБРАБОТАН. Неизвестный MessageFormat: " + format);
+						WriteLog("!РґРѕРєСѓРјРµРЅС‚ РќР• РћР‘Р РђР‘РћРўРђРќ. РќРµРёР·РІРµСЃС‚РЅС‹Р№ MessageFormat: " + format);
 						return true;
 				}
 			} else {
-				WriteLog("!размер загруженного файла ["+resultsize+"] не совпадает с заявленным ["+filesize+"]");
+				WriteLog("!СЂР°Р·РјРµСЂ Р·Р°РіСЂСѓР¶РµРЅРЅРѕРіРѕ С„Р°Р№Р»Р° ["+resultsize+"] РЅРµ СЃРѕРІРїР°РґР°РµС‚ СЃ Р·Р°СЏРІР»РµРЅРЅС‹Рј ["+filesize+"]");
 			}
 		}
 		return false;
@@ -622,25 +622,25 @@ function FileDownload(response, race) {
 		SaveBinaryData(filespec, response.responseBody);
 		if (INI.Paths.backup) Backup(filespec, "IN");
 		if (CheckFile(filespec, race.format, filesize)) {
-			WriteLog(race.filename + " загружен и проверен");
-			WriteLog("Удаление с сервера " + race.filename);
+			WriteLog(race.filename + " Р·Р°РіСЂСѓР¶РµРЅ Рё РїСЂРѕРІРµСЂРµРЅ");
+			WriteLog("РЈРґР°Р»РµРЅРёРµ СЃ СЃРµСЂРІРµСЂР° " + race.filename);
 			GetXMLdata(url_get + '?Method=Delete&InstanceID=' + race.id, FileDelete, race);
 			num_timer_onfinish = 0;
 			InitTimer(2);
 		} else {
-			WriteLog("!Ошибка проверки загруженного файла "+race.filename);
+			WriteLog("!РћС€РёР±РєР° РїСЂРѕРІРµСЂРєРё Р·Р°РіСЂСѓР¶РµРЅРЅРѕРіРѕ С„Р°Р№Р»Р° "+race.filename);
 		}
 	} else {
-		WriteLog("!Ошибка загрузки "+race.filename+": " + response.statusText);
+		WriteLog("!РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё "+race.filename+": " + response.statusText);
 	}
 }
 
-// Обработка ответа сервера на запрос XML списка рейсов
+// РћР±СЂР°Р±РѕС‚РєР° РѕС‚РІРµС‚Р° СЃРµСЂРІРµСЂР° РЅР° Р·Р°РїСЂРѕСЃ XML СЃРїРёСЃРєР° СЂРµР№СЃРѕРІ
 function GetList(response) {
 	// ------------------------------------------------
 	function isFileDownloaded(filename) {
 		var text = '';
-		var re = new RegExp(filename + " загружен", "ig");
+		var re = new RegExp(filename + " Р·Р°РіСЂСѓР¶РµРЅ", "ig");
 		if (FSO.FileExists(logfilename)) {
 			if (FSO.GetFile(logfilename).Size > 0) {
 				var file = FSO.OpenTextFile(logfilename);
@@ -672,12 +672,12 @@ function GetList(response) {
 		var files = [];
 		xmlDoc.load (filename);
 
-		// Исправление известной ошибки ЦБ (когда в заголовке list.xml указана кодировка "utf-8", а текст содержит символы в win1251)
+		// РСЃРїСЂР°РІР»РµРЅРёРµ РёР·РІРµСЃС‚РЅРѕР№ РѕС€РёР±РєРё Р¦Р‘ (РєРѕРіРґР° РІ Р·Р°РіРѕР»РѕРІРєРµ list.xml СѓРєР°Р·Р°РЅР° РєРѕРґРёСЂРѕРІРєР° "utf-8", Р° С‚РµРєСЃС‚ СЃРѕРґРµСЂР¶РёС‚ СЃРёРјРІРѕР»С‹ РІ win1251)
 		if (xmlDoc.parseError.errorCode == -1072896760){
 			var str = ReadTextFile(filename);
 			var re = /encoding\s*=\s*"utf-8"/i;
 			if (re.test(str)){
-				WriteLog("!Кодировка символов в листинге не соответствует указанной! Пытаемся исправить...");
+				WriteLog("!РљРѕРґРёСЂРѕРІРєР° СЃРёРјРІРѕР»РѕРІ РІ Р»РёСЃС‚РёРЅРіРµ РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ СѓРєР°Р·Р°РЅРЅРѕР№! РџС‹С‚Р°РµРјСЃСЏ РёСЃРїСЂР°РІРёС‚СЊ...");
 				str = str.replace(re, 'encoding="windows-1251"');
 				WriteTextFile(filename, str);
 				xmlDoc.load (filename);
@@ -685,7 +685,7 @@ function GetList(response) {
 		}
 
 		if (xmlDoc.parseError.errorCode) {
-			WriteLog("!Загружен нечитабельный листинг "+filename);
+			WriteLog("!Р—Р°РіСЂСѓР¶РµРЅ РЅРµС‡РёС‚Р°Р±РµР»СЊРЅС‹Р№ Р»РёСЃС‚РёРЅРі "+filename);
 			return files;
 		}
 
@@ -705,7 +705,7 @@ function GetList(response) {
 		}
 
 		if (files.length!=0) {
-			WriteLog("Имеются файлы для загрузки:" + filelist);
+			WriteLog("РРјРµСЋС‚СЃСЏ С„Р°Р№Р»С‹ РґР»СЏ Р·Р°РіСЂСѓР·РєРё:" + filelist);
 		}
 		return files;
 	}
@@ -719,53 +719,53 @@ function GetList(response) {
 
 			var races = ParseXML(tmp_file);
 			if (races.length==0) {
-				WriteLog("Нет файлов для загрузки");
+				WriteLog("РќРµС‚ С„Р°Р№Р»РѕРІ РґР»СЏ Р·Р°РіСЂСѓР·РєРё");
 			} else {
 				for (var i=0; i<races.length; i++) {
 					if (races[i].filename) {
 						if (!isFileDownloaded(races[i].filename)) {
-							WriteLog(" > Загрузка " + races[i].filename);
+							WriteLog(" > Р—Р°РіСЂСѓР·РєР° " + races[i].filename);
 							GetXMLdata(url_get + '?Method=Download&InstanceID=' + races[i].id, FileDownload, races[i]);
 						} else {
-							WriteLog("!Файл " + races[i].filename + " был загружен ранее");
-							WriteLog("Удаление с сервера " + races[i].filename);
+							WriteLog("!Р¤Р°Р№Р» " + races[i].filename + " Р±С‹Р» Р·Р°РіСЂСѓР¶РµРЅ СЂР°РЅРµРµ");
+							WriteLog("РЈРґР°Р»РµРЅРёРµ СЃ СЃРµСЂРІРµСЂР° " + races[i].filename);
 							GetXMLdata(url_get + '?Method=Delete&InstanceID=' + races[i].id, FileDelete, races[i]);
 						}
 					}
 				}
 			}
 		} else {
-			// "200 ОК" но responseText ничего не вернул (бывает и такое)
-			WriteLog('Ответ сервера на запрос списка: ' + response.status + ' ' + response.statusText + ' (Возможно нет файлов для загрузки)');
+			// "200 РћРљ" РЅРѕ responseText РЅРёС‡РµРіРѕ РЅРµ РІРµСЂРЅСѓР» (Р±С‹РІР°РµС‚ Рё С‚Р°РєРѕРµ)
+			WriteLog('РћС‚РІРµС‚ СЃРµСЂРІРµСЂР° РЅР° Р·Р°РїСЂРѕСЃ СЃРїРёСЃРєР°: ' + response.status + ' ' + response.statusText + ' (Р’РѕР·РјРѕР¶РЅРѕ РЅРµС‚ С„Р°Р№Р»РѕРІ РґР»СЏ Р·Р°РіСЂСѓР·РєРё)');
 		}
 	} else {
-		// При отсутствии списка сервер может вернуть 1223, 202, 200 (возможны и другие варианты...)
-		WriteLog('Ответ сервера на запрос списка: ' + response.status + ' ' + response.statusText + ' (Вероятно нет файлов для загрузки)');
+		// РџСЂРё РѕС‚СЃСѓС‚СЃС‚РІРёРё СЃРїРёСЃРєР° СЃРµСЂРІРµСЂ РјРѕР¶РµС‚ РІРµСЂРЅСѓС‚СЊ 1223, 202, 200 (РІРѕР·РјРѕР¶РЅС‹ Рё РґСЂСѓРіРёРµ РІР°СЂРёР°РЅС‚С‹...)
+		WriteLog('РћС‚РІРµС‚ СЃРµСЂРІРµСЂР° РЅР° Р·Р°РїСЂРѕСЃ СЃРїРёСЃРєР°: ' + response.status + ' ' + response.statusText + ' (Р’РµСЂРѕСЏС‚РЅРѕ РЅРµС‚ С„Р°Р№Р»РѕРІ РґР»СЏ Р·Р°РіСЂСѓР·РєРё)');
 	}
 }
 
-// Запрос списка рейсов на сервере
+// Р—Р°РїСЂРѕСЃ СЃРїРёСЃРєР° СЂРµР№СЃРѕРІ РЅР° СЃРµСЂРІРµСЂРµ
 function Download() {
 	WshShell.RegWrite ("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\GlobalUserOffline", 0, "REG_DWORD");
 
 	if (INI.Account.web_login_info) {
-		WriteLog(' > Запрос списка платежных сообщений') 
+		WriteLog(' > Р—Р°РїСЂРѕСЃ СЃРїРёСЃРєР° РїР»Р°С‚РµР¶РЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№') 
 	} else {
-		WriteLog(' > Запрос списка входящих сообщений') 
+		WriteLog(' > Р—Р°РїСЂРѕСЃ СЃРїРёСЃРєР° РІС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёР№') 
 	}
 	web_login = INI.Account.web_login;
 	web_passw = INI.Account.web_passw;
 	GetXMLdata(url_get + '?Method=List', GetList);
 
 	if (INI.Account.web_login_info){
-		WriteLog(' > Запрос списка информационных и сообщений из статистики');
+		WriteLog(' > Р—Р°РїСЂРѕСЃ СЃРїРёСЃРєР° РёРЅС„РѕСЂРјР°С†РёРѕРЅРЅС‹С… Рё СЃРѕРѕР±С‰РµРЅРёР№ РёР· СЃС‚Р°С‚РёСЃС‚РёРєРё');
 		web_login = INI.Account.web_login_info;
 		web_passw = INI.Account.web_passw_info;
 		GetXMLdata(url_get + '?Method=List', GetList);
 	}
 
 	if (INI.Account.web_login_test){
-		WriteLog(' > Запрос списка тестовых платежных сообщений');
+		WriteLog(' > Р—Р°РїСЂРѕСЃ СЃРїРёСЃРєР° С‚РµСЃС‚РѕРІС‹С… РїР»Р°С‚РµР¶РЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№');
 		web_login = INI.Account.web_login_test;
 		web_passw = INI.Account.web_passw_test;
 		GetXMLdata(url_get + '?Method=List', GetList);
@@ -777,7 +777,7 @@ function Download() {
 //  U P L O A D
 //=====================================================
 
-// Отправка одного файла
+// РћС‚РїСЂР°РІРєР° РѕРґРЅРѕРіРѕ С„Р°Р№Р»Р°
 function UploadFile(file, out_dir) {
 	httpRequest.onreadystatechange = function() {
 		if (httpRequest.readyState == 4) {
@@ -786,13 +786,13 @@ function UploadFile(file, out_dir) {
 					upload_complete = true;
 					break;
 				case 401:
-					WriteLog('!Ответ сервера: 401 Unauthorized');
+					WriteLog('!РћС‚РІРµС‚ СЃРµСЂРІРµСЂР°: 401 Unauthorized');
 					break;
 				case 412:
-					WriteLog('!Ответ сервера: 412 Duplicate message');
+					WriteLog('!РћС‚РІРµС‚ СЃРµСЂРІРµСЂР°: 412 Duplicate message');
 					break;
 				default:
-					WriteLog('!Ответ сервера: ' + httpRequest.status + ' ' + httpRequest.text);
+					WriteLog('!РћС‚РІРµС‚ СЃРµСЂРІРµСЂР°: ' + httpRequest.status + ' ' + httpRequest.text);
 			}
 		}
 	};
@@ -803,43 +803,43 @@ function UploadFile(file, out_dir) {
 	var filepath = file.Path;
 	var data = ReadBinaryFile(filepath);
 	//------------------------------------------------
-	// Общие заголовки
-	httpRequest.setRequestHeader("User-Agent", app_name + ' ' + SVKTrans.version); // не обязателен
-	httpRequest.setRequestHeader('Ack-Request', INI.Account.AckRequest); // для получения квитанций (только для бинарной статистики)
-	// Для платежных xml сообщений заголовок 'Ack-Request' игнорируется, т.к. ЦОИ анализирует нод 'AckRequest' в теле xml сообщения формируемый АРМ КБР,
-	// поэтому, если необходимы квитки, настройте АРМ КБР (Конфигурация - Транспортные реквизиты - Запрашивать квитанции).
-	// В случае передачи любого некорректного сообщения реквест с отказом от обработки придет независимо от наличия/отсутсвия данного заголовка
+	// РћР±С‰РёРµ Р·Р°РіРѕР»РѕРІРєРё
+	httpRequest.setRequestHeader("User-Agent", app_name + ' ' + SVKTrans.version); // РЅРµ РѕР±СЏР·Р°С‚РµР»РµРЅ
+	httpRequest.setRequestHeader('Ack-Request', INI.Account.AckRequest); // РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РєРІРёС‚Р°РЅС†РёР№ (С‚РѕР»СЊРєРѕ РґР»СЏ Р±РёРЅР°СЂРЅРѕР№ СЃС‚Р°С‚РёСЃС‚РёРєРё)
+	// Р”Р»СЏ РїР»Р°С‚РµР¶РЅС‹С… xml СЃРѕРѕР±С‰РµРЅРёР№ Р·Р°РіРѕР»РѕРІРѕРє 'Ack-Request' РёРіРЅРѕСЂРёСЂСѓРµС‚СЃСЏ, С‚.Рє. Р¦РћР Р°РЅР°Р»РёР·РёСЂСѓРµС‚ РЅРѕРґ 'AckRequest' РІ С‚РµР»Рµ xml СЃРѕРѕР±С‰РµРЅРёСЏ С„РѕСЂРјРёСЂСѓРµРјС‹Р№ РђР Рњ РљР‘Р ,
+	// РїРѕСЌС‚РѕРјСѓ, РµСЃР»Рё РЅРµРѕР±С…РѕРґРёРјС‹ РєРІРёС‚РєРё, РЅР°СЃС‚СЂРѕР№С‚Рµ РђР Рњ РљР‘Р  (РљРѕРЅС„РёРіСѓСЂР°С†РёСЏ - РўСЂР°РЅСЃРїРѕСЂС‚РЅС‹Рµ СЂРµРєРІРёР·РёС‚С‹ - Р—Р°РїСЂР°С€РёРІР°С‚СЊ РєРІРёС‚Р°РЅС†РёРё).
+	// Р’ СЃР»СѓС‡Р°Рµ РїРµСЂРµРґР°С‡Рё Р»СЋР±РѕРіРѕ РЅРµРєРѕСЂСЂРµРєС‚РЅРѕРіРѕ СЃРѕРѕР±С‰РµРЅРёСЏ СЂРµРєРІРµСЃС‚ СЃ РѕС‚РєР°Р·РѕРј РѕС‚ РѕР±СЂР°Р±РѕС‚РєРё РїСЂРёРґРµС‚ РЅРµР·Р°РІРёСЃРёРјРѕ РѕС‚ РЅР°Р»РёС‡РёСЏ/РѕС‚СЃСѓС‚СЃС‚РІРёСЏ РґР°РЅРЅРѕРіРѕ Р·Р°РіРѕР»РѕРІРєР°
 	httpRequest.setRequestHeader('If-None-Match', filename64);
-	httpRequest.setRequestHeader('Content-length', file.Size); // не обязателен
+	httpRequest.setRequestHeader('Content-length', file.Size); // РЅРµ РѕР±СЏР·Р°С‚РµР»РµРЅ
 
 	switch(out_dir){
 		case INI.Paths.stat_info_out:
-			// Заголовки для информационных сообщений и статистики
-			WriteLog("это документ ПТК ПСД");
+			// Р—Р°РіРѕР»РѕРІРєРё РґР»СЏ РёРЅС„РѕСЂРјР°С†РёРѕРЅРЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№ Рё СЃС‚Р°С‚РёСЃС‚РёРєРё
+			WriteLog("СЌС‚Рѕ РґРѕРєСѓРјРµРЅС‚ РџРўРљ РџРЎР”");
 			httpRequest.setRequestHeader('Content-Type', 'application/info');
 			httpRequest.setRequestHeader('LegacyTransport-FileName', filename64);
-			httpRequest.setRequestHeader('To', INI.Account.to_addr); // Адрес получателя файлов статистической отчетности
+			httpRequest.setRequestHeader('To', INI.Account.to_addr); // РђРґСЂРµСЃ РїРѕР»СѓС‡Р°С‚РµР»СЏ С„Р°Р№Р»РѕРІ СЃС‚Р°С‚РёСЃС‚РёС‡РµСЃРєРѕР№ РѕС‚С‡РµС‚РЅРѕСЃС‚Рё
 			break;
 		case INI.Paths.pay_out:
-			// Заголовки для платежек
-			WriteLog("это документ АРМ КБР");
+			// Р—Р°РіРѕР»РѕРІРєРё РґР»СЏ РїР»Р°С‚РµР¶РµРє
+			WriteLog("СЌС‚Рѕ РґРѕРєСѓРјРµРЅС‚ РђР Рњ РљР‘Р ");
 			httpRequest.setRequestHeader('Content-Type','application/xmlepd');
-			// httpRequest.setRequestHeader('To', 'uic:220200199800'); // Пользователь для обмена с ЦОИ (на этот адрес мы отсылаем платежки)
-			// для платежных xml сообщений заголовок 'To' игнорируется, т.к. ЦОИ анализирует одноименный нод в теле xml сообщения
+			// httpRequest.setRequestHeader('To', 'uic:220200199800'); // РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РґР»СЏ РѕР±РјРµРЅР° СЃ Р¦РћР (РЅР° СЌС‚РѕС‚ Р°РґСЂРµСЃ РјС‹ РѕС‚СЃС‹Р»Р°РµРј РїР»Р°С‚РµР¶РєРё)
+			// РґР»СЏ РїР»Р°С‚РµР¶РЅС‹С… xml СЃРѕРѕР±С‰РµРЅРёР№ Р·Р°РіРѕР»РѕРІРѕРє 'To' РёРіРЅРѕСЂРёСЂСѓРµС‚СЃСЏ, С‚.Рє. Р¦РћР Р°РЅР°Р»РёР·РёСЂСѓРµС‚ РѕРґРЅРѕРёРјРµРЅРЅС‹Р№ РЅРѕРґ РІ С‚РµР»Рµ xml СЃРѕРѕР±С‰РµРЅРёСЏ
 			break;
 		case INI.Paths.pay_test_out:
-			// Заголовки для тестовых платежек
-			WriteLog("это ТЕСТОВЫЙ документ АРМ КБР");
+			// Р—Р°РіРѕР»РѕРІРєРё РґР»СЏ С‚РµСЃС‚РѕРІС‹С… РїР»Р°С‚РµР¶РµРє
+			WriteLog("СЌС‚Рѕ РўР•РЎРўРћР’Р«Р™ РґРѕРєСѓРјРµРЅС‚ РђР Рњ РљР‘Р ");
 			httpRequest.setRequestHeader('Content-Type','application/xmlepd');
-			// httpRequest.setRequestHeader('To', 'uic:220200199811'); // Пользователь для тестового обмена с ЦОИ (на этот адрес мы отсылаем тесты)
-			// для платежных xml сообщений заголовок 'To' игнорируется, т.к. ЦОИ анализирует одноименный нод в теле xml сообщения
+			// httpRequest.setRequestHeader('To', 'uic:220200199811'); // РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РґР»СЏ С‚РµСЃС‚РѕРІРѕРіРѕ РѕР±РјРµРЅР° СЃ Р¦РћР (РЅР° СЌС‚РѕС‚ Р°РґСЂРµСЃ РјС‹ РѕС‚СЃС‹Р»Р°РµРј С‚РµСЃС‚С‹)
+			// РґР»СЏ РїР»Р°С‚РµР¶РЅС‹С… xml СЃРѕРѕР±С‰РµРЅРёР№ Р·Р°РіРѕР»РѕРІРѕРє 'To' РёРіРЅРѕСЂРёСЂСѓРµС‚СЃСЏ, С‚.Рє. Р¦РћР Р°РЅР°Р»РёР·РёСЂСѓРµС‚ РѕРґРЅРѕРёРјРµРЅРЅС‹Р№ РЅРѕРґ РІ С‚РµР»Рµ xml СЃРѕРѕР±С‰РµРЅРёСЏ
 			break;
 		default:
-			WriteLog("!это НЕИЗВЕСТНЫЙ ДОКУМЕНТ. Отправка прекращена");
+			WriteLog("!СЌС‚Рѕ РќР•РР—Р’Р•РЎРўРќР«Р™ Р”РћРљРЈРњР•РќРў. РћС‚РїСЂР°РІРєР° РїСЂРµРєСЂР°С‰РµРЅР°");
 			if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-				StartTimer(0); // периодической проверка
+				StartTimer(0); // РїРµСЂРёРѕРґРёС‡РµСЃРєРѕР№ РїСЂРѕРІРµСЂРєР°
 			}
-			StartTimer(1); // проверка наличия исходящих сообщений
+			StartTimer(1); // РїСЂРѕРІРµСЂРєР° РЅР°Р»РёС‡РёСЏ РёСЃС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёР№
 			return;
 	}
 	//------------------------------------------------
@@ -847,21 +847,21 @@ function UploadFile(file, out_dir) {
 	try {
 		httpRequest.send(data);
 		if (upload_complete) {
-			WriteLog('файл ' + filename + ' успешно отправлен');
+			WriteLog('С„Р°Р№Р» ' + filename + ' СѓСЃРїРµС€РЅРѕ РѕС‚РїСЂР°РІР»РµРЅ');
 			if (INI.Paths.backup) Backup(filepath, "OUT");
 			FSO.DeleteFile(filepath, true);
-			StartTimer(2); // запрос ответа на отправленное сообщение
+			StartTimer(2); // Р·Р°РїСЂРѕСЃ РѕС‚РІРµС‚Р° РЅР° РѕС‚РїСЂР°РІР»РµРЅРЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ
 		}
 	} catch(e) {
-		WriteLog("!Ошибка при открытии " + url_post);
+		WriteLog("!РћС€РёР±РєР° РїСЂРё РѕС‚РєСЂС‹С‚РёРё " + url_post);
 	}
 	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-		StartTimer(0); // периодической проверка
+		StartTimer(0); // РїРµСЂРёРѕРґРёС‡РµСЃРєРѕР№ РїСЂРѕРІРµСЂРєР°
 	}
-	StartTimer(1); // проверка наличия исходящих сообщений
+	StartTimer(1); // РїСЂРѕРІРµСЂРєР° РЅР°Р»РёС‡РёСЏ РёСЃС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёР№
 }
 
-// Проверка папок с файлами на отправку
+// РџСЂРѕРІРµСЂРєР° РїР°РїРѕРє СЃ С„Р°Р№Р»Р°РјРё РЅР° РѕС‚РїСЂР°РІРєСѓ
 function Upload() {
 	function EnumerateFiles(dir) {
 		if (FSO.FolderExists(dir)){
@@ -869,28 +869,28 @@ function Upload() {
 			var files = new Enumerator(folder.Files);
 			for (; !files.atEnd(); files.moveNext()) {
 				var file = files.item();
-				WriteLog(' > Отправка файла ' + file.Name);
+				WriteLog(' > РћС‚РїСЂР°РІРєР° С„Р°Р№Р»Р° ' + file.Name);
 				UploadFile(file, dir);
 			}
 		}else{
-			WriteLog('!Каталог "' + dir + '" отсутствует');
+			WriteLog('!РљР°С‚Р°Р»РѕРі "' + dir + '" РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚');
 		}
 	}
 	web_login = INI.Account.web_login;
 	web_passw = INI.Account.web_passw;
-	if (INI.Paths.pay_out) EnumerateFiles(INI.Paths.pay_out);      // Каталог исходящих платежных сообщений
+	if (INI.Paths.pay_out) EnumerateFiles(INI.Paths.pay_out);      // РљР°С‚Р°Р»РѕРі РёСЃС…РѕРґСЏС‰РёС… РїР»Р°С‚РµР¶РЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№
 
 	if (INI.Account.web_login_info){
 		web_login = INI.Account.web_login_info;
 		web_passw = INI.Account.web_passw_info;
 	}
-	if (INI.Paths.stat_info_out) EnumerateFiles(INI.Paths.stat_info_out);     // Каталог исходящих информационных и сообщений в статистику
+	if (INI.Paths.stat_info_out) EnumerateFiles(INI.Paths.stat_info_out);     // РљР°С‚Р°Р»РѕРі РёСЃС…РѕРґСЏС‰РёС… РёРЅС„РѕСЂРјР°С†РёРѕРЅРЅС‹С… Рё СЃРѕРѕР±С‰РµРЅРёР№ РІ СЃС‚Р°С‚РёСЃС‚РёРєСѓ
 
 	if (INI.Account.web_login_test){
 		web_login = INI.Account.web_login_test;
 		web_passw = INI.Account.web_passw_test;
 	}
-	if (INI.Paths.pay_test_out) EnumerateFiles(INI.Paths.pay_test_out); // Каталог исходящих тестовых платежных сообщений
+	if (INI.Paths.pay_test_out) EnumerateFiles(INI.Paths.pay_test_out); // РљР°С‚Р°Р»РѕРі РёСЃС…РѕРґСЏС‰РёС… С‚РµСЃС‚РѕРІС‹С… РїР»Р°С‚РµР¶РЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№
 }
 
 
@@ -898,16 +898,16 @@ function Upload() {
 // F O R M   O N L O A D
 //=====================================================//
 
-// Инициализация объектов ActiveX
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РѕР±СЉРµРєС‚РѕРІ ActiveX
 function ActiveX_Init() {
-	var msxml_alert = "Продолжение работы невозможно!\nУстановите MSXML 4.0 или более поздней версии.";
+	var msxml_alert = "РџСЂРѕРґРѕР»Р¶РµРЅРёРµ СЂР°Р±РѕС‚С‹ РЅРµРІРѕР·РјРѕР¶РЅРѕ!\nРЈСЃС‚Р°РЅРѕРІРёС‚Рµ MSXML 4.0 РёР»Рё Р±РѕР»РµРµ РїРѕР·РґРЅРµР№ РІРµСЂСЃРёРё.";
 
 	function XMLHTTP_Init() {
 		var progID = ['Msxml2.XMLHTTP.6.0', 'Msxml2.XMLHTTP.5.0', 'Msxml2.XMLHTTP.4.0', 'Microsoft.XMLHTTP'];
 		for (var i = 0; i < progID.length; i++) {
 			try {
 				httpRequest = new ActiveXObject(progID[i]);
-				if (i > 2) alert("Отправка файлов статотчетности работать не будет!\nУстановите более позднюю версию MSXML.");
+				if (i > 2) alert("РћС‚РїСЂР°РІРєР° С„Р°Р№Р»РѕРІ СЃС‚Р°С‚РѕС‚С‡РµС‚РЅРѕСЃС‚Рё СЂР°Р±РѕС‚Р°С‚СЊ РЅРµ Р±СѓРґРµС‚!\nРЈСЃС‚Р°РЅРѕРІРёС‚Рµ Р±РѕР»РµРµ РїРѕР·РґРЅСЋСЋ РІРµСЂСЃРёСЋ MSXML.");
 				return httpRequest;
 			}
 			catch (e) {}
@@ -933,14 +933,14 @@ function ActiveX_Init() {
 		WshShell = new ActiveXObject("WScript.Shell");
 		FSO = new ActiveXObject("Scripting.FileSystemObject");
 	} catch(e) {
-		alert("Продолжение работы невозможно!\nУстановите Windows Script Host.");
+		alert("РџСЂРѕРґРѕР»Р¶РµРЅРёРµ СЂР°Р±РѕС‚С‹ РЅРµРІРѕР·РјРѕР¶РЅРѕ!\nРЈСЃС‚Р°РЅРѕРІРёС‚Рµ Windows Script Host.");
 		self.close();
 	}
 
 	try {
 		adoStream = new ActiveXObject("ADODB.Stream");
 	} catch(e) {
-		alert("Продолжение работы невозможно!\nОтсутсвует ADODB.Stream");
+		alert("РџСЂРѕРґРѕР»Р¶РµРЅРёРµ СЂР°Р±РѕС‚С‹ РЅРµРІРѕР·РјРѕР¶РЅРѕ!\nРћС‚СЃСѓС‚СЃРІСѓРµС‚ ADODB.Stream");
 		self.close();
 	}
 
@@ -948,32 +948,32 @@ function ActiveX_Init() {
 	XMLDOC_Init();
 }
 
-// Регистрация и инициализация Socket ActiveX
+// Р РµРіРёСЃС‚СЂР°С†РёСЏ Рё РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Socket ActiveX
 function InitSocket() {
 	if (!INI.Account.telnet_host) return;
 	try {
 		objSocket = new ActiveXObject("Socket.TCP");
 	} catch(e) {
-		var title = "Установка w3Sockets ActiveX";
+		var title = "РЈСЃС‚Р°РЅРѕРІРєР° w3Sockets ActiveX";
 		var socket = script_path + '\\' + "Socket.dll";
-		if (WshShell.Popup("Для telnet аутентификации необходимо зарегистрировать w3Sockets ActiveX\nЗапустить процедуру регистрации?", 0, title, 36)!=6){
+		if (WshShell.Popup("Р”Р»СЏ telnet Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёРё РЅРµРѕР±С…РѕРґРёРјРѕ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°С‚СЊ w3Sockets ActiveX\nР—Р°РїСѓСЃС‚РёС‚СЊ РїСЂРѕС†РµРґСѓСЂСѓ СЂРµРіРёСЃС‚СЂР°С†РёРё?", 0, title, 36)!=6){
 			self.close();
 		}
 		if (!FSO.FileExists(socket)){
-			WshShell.Popup("Файл Socket.dll в текущем каталоге\nО Т С У Т С Т В У Е Т !", 5, title, 48);
+			WshShell.Popup("Р¤Р°Р№Р» Socket.dll РІ С‚РµРєСѓС‰РµРј РєР°С‚Р°Р»РѕРіРµ\nРћ Рў РЎ РЈ Рў РЎ Рў Р’ РЈ Р• Рў !", 5, title, 48);
 			self.close();
 		}
 		WshShell.Run('regsvr32 "' + socket + '"', 1, true);
 		try {
 			objSocket = new ActiveXObject("Socket.TCP");
 		} catch(e) {
-			WshShell.Popup("Ошибка при регистрации Socket.dll!", 5, title, 16);
+			WshShell.Popup("РћС€РёР±РєР° РїСЂРё СЂРµРіРёСЃС‚СЂР°С†РёРё Socket.dll!", 5, title, 16);
 			self.close();
 		}
 	}
 }
 
-// Загрузка ограничений по дате/времени в массив Arr_Restrictions
+// Р—Р°РіСЂСѓР·РєР° РѕРіСЂР°РЅРёС‡РµРЅРёР№ РїРѕ РґР°С‚Рµ/РІСЂРµРјРµРЅРё РІ РјР°СЃСЃРёРІ Arr_Restrictions
 function LoadRestrictions(){
 	if ((!FSO.FileExists(rest_file))||(!FSO.GetFile(rest_file).Size > 0)) return;
 	var file = FSO.OpenTextFile(rest_file);
@@ -986,7 +986,7 @@ function LoadRestrictions(){
 	file.Close();
 }
 
-// Действия при загрузке формы
+// Р”РµР№СЃС‚РІРёСЏ РїСЂРё Р·Р°РіСЂСѓР·РєРµ С„РѕСЂРјС‹
 function On_Load() {
 	LoadRestrictions();
 	timeout[0] = INI.Timeout.next;
@@ -994,21 +994,21 @@ function On_Load() {
 	timeout[2] = INI.Timeout.conform;
 	timeout[3] = INI.Timeout.connerror;
 
-	ReadLog(); // загружаем предыдущие записи из лога
+	ReadLog(); // Р·Р°РіСЂСѓР¶Р°РµРј РїСЂРµРґС‹РґСѓС‰РёРµ Р·Р°РїРёСЃРё РёР· Р»РѕРіР°
 	InitAllTimers();
-	StartTimer(1); // проверка наличия исходящих сообщений
+	StartTimer(1); // РїСЂРѕРІРµСЂРєР° РЅР°Р»РёС‡РёСЏ РёСЃС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёР№
 	ShowTimers();
 	CheckRestrictions();
 	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-		StartTimer(0); // периодической проверка
+		StartTimer(0); // РїРµСЂРёРѕРґРёС‡РµСЃРєРѕР№ РїСЂРѕРІРµСЂРєР°
 	}
 }
 
-// Обработка клика на чекбоксе "отключить периодическую проверку в заданные дни и часы."
+// РћР±СЂР°Р±РѕС‚РєР° РєР»РёРєР° РЅР° С‡РµРєР±РѕРєСЃРµ "РѕС‚РєР»СЋС‡РёС‚СЊ РїРµСЂРёРѕРґРёС‡РµСЃРєСѓСЋ РїСЂРѕРІРµСЂРєСѓ РІ Р·Р°РґР°РЅРЅС‹Рµ РґРЅРё Рё С‡Р°СЃС‹."
 function ChkRestrictionsOnClick(){
 	if (TextRestrict.style.color == "red") {
 		if (!ChkRestrictions.checked){
-			StartTimer(0); // периодической проверка
+			StartTimer(0); // РїРµСЂРёРѕРґРёС‡РµСЃРєРѕР№ РїСЂРѕРІРµСЂРєР°
 		}else{
 			InitTimer(0);
 		}
@@ -1019,31 +1019,31 @@ function ChkRestrictionsOnClick(){
 </head><body onload="On_Load()">
 <table width="100%" height="100%" cellpadding="0" cellspacing="0" border="0">
 	<tr><td>
-		<fieldset><legend>&nbsp;Время, оставшееся до...</legend>
+		<fieldset><legend>&nbsp;Р’СЂРµРјСЏ, РѕСЃС‚Р°РІС€РµРµСЃСЏ РґРѕ...</legend>
 			<table width="100%" cellpadding="0" cellspacing="0" border="0">
 				<tr>
-					<td width="100%">&nbsp;&nbsp;... периодической проверки входящих сообщений:&nbsp;<span style="color:highlight;font-weight:bold;">&#185;</span>
+					<td width="100%">&nbsp;&nbsp;... РїРµСЂРёРѕРґРёС‡РµСЃРєРѕР№ РїСЂРѕРІРµСЂРєРё РІС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёР№:&nbsp;<span style="color:highlight;font-weight:bold;">&#185;</span>
 					<td align="center"><span style="font:normal normal 16pt Wingdings; color:highlight;">&#xC1;</span>&nbsp;
 					<td><input type=text id=TimerVisible disabled><input type=text id=TimerHidden>&nbsp;
 				<tr>
-					<td width="100%">&nbsp;&nbsp;... проверки наличия исходящих сообщений:&nbsp;
+					<td width="100%">&nbsp;&nbsp;... РїСЂРѕРІРµСЂРєРё РЅР°Р»РёС‡РёСЏ РёСЃС…РѕРґСЏС‰РёС… СЃРѕРѕР±С‰РµРЅРёР№:&nbsp;
 					<td align="center"><span style="font:normal normal 12pt Wingdings; color:highlight;">&#x2B;</span>&nbsp;
 					<td><input type=text id=TimerVisible disabled><input type=text id=TimerHidden>&nbsp;
 				<tr>
-					<td width="100%">&nbsp;&nbsp;... запроса ответа на отправленное сообщение:&nbsp;
+					<td width="100%">&nbsp;&nbsp;... Р·Р°РїСЂРѕСЃР° РѕС‚РІРµС‚Р° РЅР° РѕС‚РїСЂР°РІР»РµРЅРЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ:&nbsp;
 					<td align="center"><span style="font:normal normal 12pt Wingdings; color:highlight;">&#x2E;</span>&nbsp;
 					<td><input type=text id=TimerVisible disabled><input type=text id=TimerHidden>&nbsp;
 				<tr>
-					<td width="100%">&nbsp;&nbsp;... повтора неудавшейся попытки соединения:&nbsp;
+					<td width="100%">&nbsp;&nbsp;... РїРѕРІС‚РѕСЂР° РЅРµСѓРґР°РІС€РµР№СЃСЏ РїРѕРїС‹С‚РєРё СЃРѕРµРґРёРЅРµРЅРёСЏ:&nbsp;
 					<td align="center"><span style="font:normal normal 16pt Wingdings; color:highlight;">&#x29;</span>&nbsp;
 					<td><input type=text id=TimerVisible disabled><input type=text id=TimerHidden>&nbsp;
 			</table>
 		</fieldset>
 	<tr><td>
 		<input id="ChkRestrictions" type=checkbox checked onClick="ChkRestrictionsOnClick()">
-		<label hidefocus for="ChkRestrictions"><span style="font-weight:bold;">&#185;</span>&nbsp;отключить периодическую проверку в <a href="#" onClick="WshShell.Run('notepad ' + rest_file)" title="Открыть файл ограничений по датам и времени" hidefocus>заданные</a> дни и часы. Текущее ограничение: <span id="TextRestrict"></span></label>
+		<label hidefocus for="ChkRestrictions"><span style="font-weight:bold;">&#185;</span>&nbsp;РѕС‚РєР»СЋС‡РёС‚СЊ РїРµСЂРёРѕРґРёС‡РµСЃРєСѓСЋ РїСЂРѕРІРµСЂРєСѓ РІ <a href="#" onClick="WshShell.Run('notepad ' + rest_file)" title="РћС‚РєСЂС‹С‚СЊ С„Р°Р№Р» РѕРіСЂР°РЅРёС‡РµРЅРёР№ РїРѕ РґР°С‚Р°Рј Рё РІСЂРµРјРµРЅРё" hidefocus>Р·Р°РґР°РЅРЅС‹Рµ</a> РґРЅРё Рё С‡Р°СЃС‹. РўРµРєСѓС‰РµРµ РѕРіСЂР°РЅРёС‡РµРЅРёРµ: <span id="TextRestrict"></span></label>
 	<tr height="30px"><td align="center">
-		<button onClick="num_timer_onfinish=4; Connect()" hidefocus>Установить соединение немедленно</button>
+		<button onClick="num_timer_onfinish=4; Connect()" hidefocus>РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃРѕРµРґРёРЅРµРЅРёРµ РЅРµРјРµРґР»РµРЅРЅРѕ</button>
 	<tr height="100%"><td>
 		<textarea style="width:100%; height:100%;" id=Log></textarea>
 </table>

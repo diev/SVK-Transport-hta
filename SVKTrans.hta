@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.8.6
+	version=1.8.7
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -198,13 +198,9 @@ function sec2time(sec) {
 // Создание каталога (при ошибке закрывает приложение)
 function CreateFolder(path) {
 	if (!FSO.FolderExists(path)){
-		if (WshShell.Popup("Заданный Вами в SVKTrans.ini каталог\n"+path+"\nне существует!\n\nСоздать его?", 0, "Предупреждение", 36) == 6){
-			var ret = WshShell.Run('%COMSPEC% /c MD "' + path + '"', 0, true);
-			if (ret != 0) {
-				WriteLog('!Ошибка при создании каталога "' + path + '"');
-				self.close();
-			}
-		}else{
+		var ret = WshShell.Run('%COMSPEC% /c MD "' + path + '"', 0, true);
+		if (ret != 0) {
+			WriteLog('!Ошибка при создании каталога "' + path + '"');
 			self.close();
 		}
 	}
@@ -213,15 +209,16 @@ function CreateFolder(path) {
 // Создание всех каталогов приема/выгрузки сообщений
 function MakeAllDir() {
 	CreateFolder(store_path);
-	if (INI.Paths.pay_in) CreateFolder(INI.Paths.pay_in);
-	if (INI.Paths.pay_out) CreateFolder(INI.Paths.pay_out);
-	if (INI.Paths.pay_kvit) CreateFolder(INI.Paths.pay_kvit);
-	if (INI.Paths.pay_test_in) CreateFolder(INI.Paths.pay_test_in);
-	if (INI.Paths.pay_test_out) CreateFolder(INI.Paths.pay_test_out);
-	if (INI.Paths.pay_test_kvit) CreateFolder(INI.Paths.pay_test_kvit);
-	if (INI.Paths.stat_info_in) CreateFolder(INI.Paths.stat_info_in);
-	if (INI.Paths.stat_info_out) CreateFolder(INI.Paths.stat_info_out);
-	if (INI.Paths.backup) CreateFolder(INI.Paths.backup);
+	for (var i in INI.Paths){
+		var path = INI.Paths[i];
+		if ((path) && (!FSO.FolderExists(path))) {
+			if (WshShell.Popup("Заданный Вами в SVKTrans.ini каталог\n"+path+"\nне существует!\n\nСоздать его?", 0, "Предупреждение", 36) == 6){
+				CreateFolder(path);
+			} else {
+				self.close();
+			}
+		}
+	}
 }
 
 // Бекап получаемых|сохраняемых файлов (direction = IN|OUT)

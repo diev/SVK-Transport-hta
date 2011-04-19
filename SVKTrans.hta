@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.8.7
+	version=1.8.8
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -780,7 +780,10 @@ function UploadFile(file, out_dir) {
 		if (httpRequest.readyState == 4) {
 			switch(httpRequest.status){
 				case 202:
-					upload_complete = true;
+					WriteLog('файл ' + filename + ' успешно отправлен');
+					if (INI.Paths.backup) Backup(filepath, "OUT");
+					FSO.DeleteFile(filepath, true);
+					StartTimer(2); // запрос ответа на отправленное сообщение
 					break;
 				case 401:
 					WriteLog('!Ответ сервера: 401 Unauthorized');
@@ -840,15 +843,8 @@ function UploadFile(file, out_dir) {
 			return;
 	}
 	//------------------------------------------------
-	var upload_complete = false;
 	try {
 		httpRequest.send(data);
-		if (upload_complete) {
-			WriteLog('файл ' + filename + ' успешно отправлен');
-			if (INI.Paths.backup) Backup(filepath, "OUT");
-			FSO.DeleteFile(filepath, true);
-			StartTimer(2); // запрос ответа на отправленное сообщение
-		}
 	} catch(e) {
 		WriteLog("!Ошибка при открытии " + url_post);
 	}

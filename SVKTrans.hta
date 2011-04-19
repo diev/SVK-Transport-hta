@@ -999,6 +999,7 @@ function On_Load() {
 	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
 		StartTimer(0); // периодической проверка
 	}
+	WriteLog('> === ' + document.title + '. Старт программы === <')
 }
 
 // Обработка клика на чекбоксе "отключить периодическую проверку в заданные дни и часы."

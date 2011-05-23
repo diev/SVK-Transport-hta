@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.8.9
+	version=1.9.0
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -523,6 +523,14 @@ function FileDelete(response, race) {
 function FileDownload(response, race) {
 	// ------------------------------------------------
 	function CheckFile(filename, format, filesize) {
+		var Recipients = [];  // массив, хранящий адреса получателей сообщения
+		// Проверка, содержит ли сообщение рабочий или тестовый адрес нашего АРМ КБР
+		function IsRecipient(recipient){
+			for (var i in Recipients){
+				if (Recipients[i] == recipient) return true;
+			}
+			return false;
+		}
 		if (FSO.FileExists(filename)) {
 			var resultsize = FSO.GetFile(filename).Size;
 			if (resultsize == filesize) {
@@ -531,30 +539,39 @@ function FileDownload(response, race) {
 					case "XMLESID":
 						xmlDoc.load (filename);
 						if (!xmlDoc.parseError.errorCode) {
-							switch(xmlDoc.getElementsByTagName("props:MessageInfo")[0].getElementsByTagName("props:To")[0].childNodes[0].text){
-								case INI.Account.UEO_uic_work: // Логический адрес АРМ КБР
-									WriteLog("это "+format+" документ для АРМ КБР");
-									if (INI.Paths.pay_in){
-										FSO.MoveFile(filename, INI.Paths.pay_in + '\\'); // в каталог входящих платежных сообщений
-									}else{
-										WriteLog("!Каталог входящих платежных сообщений НЕ ЗАДАН");
-									}
-									break;
-								case INI.Account.UEO_uic_test: // Логический тестовый адрес АРМ КБР
-									WriteLog("это ТЕСТОВЫЙ "+format+" документ АРМ КБР");
-									if (INI.Paths.pay_test_in) {
-										FSO.MoveFile(filename, INI.Paths.pay_test_in + '\\');  // Каталог входящих тестовых платежных сообщений
-									}else{
-										WriteLog("!Каталог входящих тестовых платежных сообщений НЕ ЗАДАН");
-									}
-									break;
-								default:
-									WriteLog("!это "+format+" документ НЕ АРМ КБР");
+							// Извлекаем из документа все адреса получателей в массив Recipients
+							var To_arr = xmlDoc.getElementsByTagName("props:MessageInfo")[0].getElementsByTagName("props:To");
+							for (var i=0; i<To_arr.length; i++) {
+								Recipients.push(To_arr[i].childNodes[0].text);
 							}
-							return true;
+
+							if (IsRecipient(INI.Account.UEO_uic_work)){ // Логический адрес АРМ КБР
+								WriteLog("это "+format+" документ для АРМ КБР");
+								if (INI.Paths.pay_in){
+									FSO.MoveFile(filename, INI.Paths.pay_in + '\\'); // в каталог входящих платежных сообщений
+								}else{
+									WriteLog("!Каталог входящих платежных сообщений НЕ ЗАДАН");
+								}
+								return true; // true - "загружен успешно"
+							}
+
+							if (IsRecipient(INI.Account.UEO_uic_test)){ // Логический тестовый адрес АРМ КБР
+								WriteLog("это ТЕСТОВЫЙ "+format+" документ АРМ КБР");
+								if (INI.Paths.pay_test_in) {
+									FSO.MoveFile(filename, INI.Paths.pay_test_in + '\\');  // Каталог входящих тестовых платежных сообщений
+								}else{
+									WriteLog("!Каталог входящих тестовых платежных сообщений НЕ ЗАДАН");
+								}
+								return true; // true - "загружен успешно"
+							}
+
+							// Ни рабочий ни тестовый адрес нашего АРМ КБР в списке получателей не указан
+							WriteLog("!этот "+format+" документ адресован НЕ НАМ");
+							return true; // true - "загружен успешно"
+
 						} else {
 							WriteLog("!не читаемый "+format+" документ");
-							return false;
+							return false; // false - "загружен с ошибкой - будем перекачивать"
 						}
 					case "RECEIPT":
 						xmlDoc.load (filename);
@@ -589,10 +606,10 @@ function FileDownload(response, race) {
 								default:
 									WriteLog("это квитанция о получении НЕИЗВЕСТНОГО документа " + receipt_info);
 							}
-							return true;
+							return true; // true - "загружен успешно"
 						} else {
 							WriteLog("!не читаемая квитанция о получении документа");
-							return true;
+							return true; // true - "загружен успешно"
 						}
 					case "INFO":
 						WriteLog("это документ ПТК ПСД");
@@ -601,16 +618,16 @@ function FileDownload(response, race) {
 						}else{
 							WriteLog("!Каталог входящих информационных и сообщений из статистики НЕ ЗАДАН");
 						}
-						return true;
+						return true; // true - "загружен успешно"
 					default:
 						WriteLog("!документ НЕ ОБРАБОТАН. Неизвестный MessageFormat: " + format);
-						return true;
+						return true; // true - "загружен успешно"
 				}
 			} else {
 				WriteLog("!размер загруженного файла ["+resultsize+"] не совпадает с заявленным ["+filesize+"]");
 			}
 		}
-		return false;
+		return false; // false - "загружен с ошибкой - будем перекачивать"
 	}
 	// ------------------------------------------------
 	if (response.status == 200) {

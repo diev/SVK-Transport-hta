@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.9.0
+	version=1.9.1
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -531,6 +531,18 @@ function FileDownload(response, race) {
 			}
 			return false;
 		}
+		// Перемещение файла (с проверкой существования совпадающего имени в каталоге назначения)
+		function MoveFile(filename, destination){
+			var dest_file = destination + '\\' + FSO.GetFile(filename).Name;
+			if (FSO.FileExists(dest_file)) {
+				var File = FSO.GetFile(dest_file);
+				var dt = objDate(File.DateLastModified);
+				var old_file = File.Name + '.' + dt.year+dt.month+dt.day+dt.hours+dt.min+dt.sec;
+				WriteLog("! в каталоге " + destination + " уже имеется файл с таким именем.\n           Переименовываю его в " + old_file);
+				FSO.MoveFile(dest_file, destination + '\\' + old_file);
+			}
+			FSO.MoveFile(filename, destination);
+		}
 		if (FSO.FileExists(filename)) {
 			var resultsize = FSO.GetFile(filename).Size;
 			if (resultsize == filesize) {
@@ -548,7 +560,7 @@ function FileDownload(response, race) {
 							if (IsRecipient(INI.Account.UEO_uic_work)){ // Логический адрес АРМ КБР
 								WriteLog("это "+format+" документ для АРМ КБР");
 								if (INI.Paths.pay_in){
-									FSO.MoveFile(filename, INI.Paths.pay_in + '\\'); // в каталог входящих платежных сообщений
+									MoveFile(filename, INI.Paths.pay_in + '\\'); // в каталог входящих платежных сообщений
 								}else{
 									WriteLog("!Каталог входящих платежных сообщений НЕ ЗАДАН");
 								}
@@ -558,7 +570,7 @@ function FileDownload(response, race) {
 							if (IsRecipient(INI.Account.UEO_uic_test)){ // Логический тестовый адрес АРМ КБР
 								WriteLog("это ТЕСТОВЫЙ "+format+" документ АРМ КБР");
 								if (INI.Paths.pay_test_in) {
-									FSO.MoveFile(filename, INI.Paths.pay_test_in + '\\');  // Каталог входящих тестовых платежных сообщений
+									MoveFile(filename, INI.Paths.pay_test_in + '\\');  // Каталог входящих тестовых платежных сообщений
 								}else{
 									WriteLog("!Каталог входящих тестовых платежных сообщений НЕ ЗАДАН");
 								}
@@ -582,7 +594,7 @@ function FileDownload(response, race) {
 								case INI.Account.UEO_uic_work: // Логический адрес АРМ КБР
 									WriteLog("это квитанция о получении платежного документа " + receipt_info);
 									if (INI.Paths.pay_kvit) {
-										FSO.MoveFile(filename, INI.Paths.pay_kvit + '\\'); // в каталог квитанций на платежные сообщения
+										MoveFile(filename, INI.Paths.pay_kvit + '\\'); // в каталог квитанций на платежные сообщения
 									}else{
 										WriteLog("!Каталог квитанций на платежные сообщения НЕ ЗАДАН");
 									}
@@ -590,7 +602,7 @@ function FileDownload(response, race) {
 								case INI.Account.UEO_uic_test: // Логический тестовый адрес АРМ КБР
 									WriteLog("это квитанция о получении ТЕСТОВОГО платежного документа " + receipt_info);
 									if (INI.Paths.pay_test_kvit) {
-										FSO.MoveFile(filename, INI.Paths.pay_test_kvit + '\\'); // в каталог квитанций на тестовые платежные сообщения
+										MoveFile(filename, INI.Paths.pay_test_kvit + '\\'); // в каталог квитанций на тестовые платежные сообщения
 									}else{
 										WriteLog("!Каталог квитанций на тестовые платежные сообщения НЕ ЗАДАН");
 									}
@@ -598,7 +610,7 @@ function FileDownload(response, race) {
 								case INI.Account.from_addr: // Адрес отправителя файлов статистической отчетности
 									WriteLog("это квитанция о получении информационного сообщения " + receipt_info);
 									if (INI.Paths.stat_info_kvit) {
-										FSO.MoveFile(filename, INI.Paths.stat_info_kvit + '\\'); // в каталог квитанций на тестовые платежные сообщения
+										MoveFile(filename, INI.Paths.stat_info_kvit + '\\'); // в каталог квитанций на тестовые платежные сообщения
 									}else{
 										WriteLog("!Каталог квитанций на сообщения в статистику НЕ ЗАДАН");
 									}
@@ -614,7 +626,7 @@ function FileDownload(response, race) {
 					case "INFO":
 						WriteLog("это документ ПТК ПСД");
 						if (INI.Paths.stat_info_in) {
-							FSO.MoveFile(filename, INI.Paths.stat_info_in + '\\'); // в каталог входящих информационных и сообщений из статистики
+							MoveFile(filename, INI.Paths.stat_info_in + '\\'); // в каталог входящих информационных и сообщений из статистики
 						}else{
 							WriteLog("!Каталог входящих информационных и сообщений из статистики НЕ ЗАДАН");
 						}

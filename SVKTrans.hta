@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.9.1
+	version=1.9.2
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -37,6 +37,7 @@ var ini_filename = "SVKTrans.ini";      // имя ini файла
 var timeout = [];                       // массив для хранения интервалов таймеров
 var num_timer_onfinish;                 // номер таймера, вызвавшего срабатывание
 var current_day = new Date().getDate(); // текущий день (используется для очистки окна лога)
+var online = false;                     // состояние соединения
 
 // Объекты ActiveX
 var WshShell;
@@ -370,6 +371,7 @@ function Connect() {
 			case 6: return '> Запуск при старте приложения';
 		}
 	}
+	online = false;
 	InitAllTimers();
 	WriteLog(EventDescription());
 	var connection = INI.Account.connection; // Имя dialup соединения с СВК 
@@ -398,6 +400,7 @@ function Connect() {
 			WriteLog('Telnet аутентификация пройдена');
 		}
 	}
+	online = true;
 	Download();
 	Upload();
 	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
@@ -502,9 +505,12 @@ function GetXMLdata(url, func, param) {
 	try {
 		httpRequest.send(null);
 	} catch(e) {
-		// При отсутствии списка файлов на сервере возникает ошибка - это нормально (по мнению ЦБ)
-		if (!/Method=List/.test(url)) { // не будем ее показывать, дабы не пугать пользователя
+		if (!/Method=List/.test(url)) { // При отсутствии списка файлов на сервере возникает ошибка - это нормально (по мнению ЦБ). Не будем ее показывать, дабы не пугать пользователя
+			// Все остальные ошибки - показываются:
 			WriteLog("!Ошибка при открытии " + url);
+			online = false;
+			StartTimer(3); // повтор неудавшегося подключения
+			return;
 		}
 	}
 	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
@@ -748,7 +754,7 @@ function GetList(response) {
 				WriteLog("Нет файлов для загрузки");
 			} else {
 				for (var i=0; i<races.length; i++) {
-					if (races[i].filename) {
+					if ((races[i].filename) && online) {
 						if (!isFileDownloaded(races[i].filename)) {
 							WriteLog(" > Загрузка " + races[i].filename);
 							GetXMLdata(url_get + '?Method=Download&InstanceID=' + races[i].id, FileDownload, races[i]);
@@ -872,6 +878,9 @@ function UploadFile(file, out_dir) {
 		httpRequest.send(data);
 	} catch(err) {
 		WriteLog("!Ошибка при открытии " + url_post);
+		online = false;
+		StartTimer(3); // повтор неудавшегося подключения
+		return;
 	}
 	if ((!err) && (httpRequest.status == 202)){
 		WriteLog('файл ' + filename + ' успешно отправлен');
@@ -892,9 +901,11 @@ function Upload() {
 			var folder = FSO.GetFolder(dir);
 			var files = new Enumerator(folder.Files);
 			for (; !files.atEnd(); files.moveNext()) {
-				var file = files.item();
-				WriteLog(' > Отправка файла ' + file.Name);
-				UploadFile(file, dir);
+				if (online) {
+					var file = files.item();
+					WriteLog(' > Отправка файла ' + file.Name);
+					UploadFile(file, dir);
+				}
 			}
 		}else{
 			WriteLog('!Каталог "' + dir + '" отсутствует');

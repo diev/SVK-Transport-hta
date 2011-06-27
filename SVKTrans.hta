@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.9.2
+	version=1.9.3
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -551,7 +551,7 @@ function FileDownload(response, race) {
 		}
 		if (FSO.FileExists(filename)) {
 			var resultsize = FSO.GetFile(filename).Size;
-			if (resultsize == filesize) {
+			if ((resultsize == filesize) || (filesize==0)) {
 				switch (format) {
 					case "XMLEPD":
 					case "XMLESID":
@@ -651,6 +651,7 @@ function FileDownload(response, race) {
 	if (response.status == 200) {
 		var filespec = store_path + race.filename;
 		var filesize = Number(response.getResponseHeader("Content-Length"));
+		if (filesize == 0) WriteLog("!Ошибка получения размера файла " + race.filename + ". Загружаем без контроля.");
 		SaveBinaryData(filespec, response.responseBody);
 		if (INI.Paths.backup) Backup(filespec, "IN");
 		if (CheckFile(filespec, race.format, filesize)) {

@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.9.3
+	version=1.9.4
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -756,13 +756,19 @@ function GetList(response) {
 			} else {
 				for (var i=0; i<races.length; i++) {
 					if ((races[i].filename) && online) {
-						if (!isFileDownloaded(races[i].filename)) {
-							WriteLog(" > Загрузка " + races[i].filename);
-							GetXMLdata(url_get + '?Method=Download&InstanceID=' + races[i].id, FileDownload, races[i]);
-						} else {
-							WriteLog("!Файл " + races[i].filename + " был загружен ранее");
+						if ((INI.Config) && (INI.Config.file_ignore) && ((new RegExp('^'+INI.Config.file_ignore.replace(/\./g,'\\.').replace(/\?/g,'.').replace(/\*/g,'.*?')+'$', "i")).test(races[i].filename))) {
+							WriteLog("!Файл " + races[i].filename + " определен как ненужный");
 							WriteLog("Удаление с сервера " + races[i].filename);
 							GetXMLdata(url_get + '?Method=Delete&InstanceID=' + races[i].id, FileDelete, races[i]);
+						} else {
+							if (!isFileDownloaded(races[i].filename)) {
+								WriteLog(" > Загрузка " + races[i].filename);
+								GetXMLdata(url_get + '?Method=Download&InstanceID=' + races[i].id, FileDownload, races[i]);
+							} else {
+								WriteLog("!Файл " + races[i].filename + " был загружен ранее");
+								WriteLog("Удаление с сервера " + races[i].filename);
+								GetXMLdata(url_get + '?Method=Delete&InstanceID=' + races[i].id, FileDelete, races[i]);
+							}
 						}
 					}
 				}

@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.9.4
+	version=1.10.0
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -58,11 +58,14 @@ var url_get = 'http://' + INI.Account.svk_host + '/KbrInterface/System/Main.aspx
 var url_post = 'http://' + INI.Account.svk_host + '/KbrReceive/';
 var web_login;
 var web_passw;
+var ext_list = true; // признак использования расширенного варианта листинга файлов
 
 MakeAllDir();
 
 var objSocket;
+var objXBuffer;
 InitSocket();
+InitXBuffer();
 
 //=====================================================
 //  C O M M O N
@@ -525,143 +528,139 @@ function FileDelete(response, race) {
 	if (response.status != 200) WriteLog("!Ошибка при удалении "+race.filename+": " + response.statusText);
 }
 
+// Сортировка принятых файлов по каталогам назначения в зависимости от формата сообщения
+function SortingFiles(filename, format) {
+	var Recipients = [];  // массив, хранящий адреса получателей сообщения
+	// Проверка, содержит ли сообщение рабочий или тестовый адрес нашего АРМ КБР
+	function IsRecipient(recipient){
+		for (var i in Recipients){
+			if (Recipients[i] == recipient) return true;
+		}
+		return false;
+	}
+	// Перемещение файла (с проверкой существования совпадающего имени в каталоге назначения)
+	function MoveFile(filename, destination){
+		var dest_file = destination + '\\' + FSO.GetFile(filename).Name;
+		if (FSO.FileExists(dest_file)) {
+			var File = FSO.GetFile(dest_file);
+			var dt = objDate(File.DateLastModified);
+			var old_file = File.Name + '.' + dt.year+dt.month+dt.day+dt.hours+dt.min+dt.sec;
+			WriteLog("! в каталоге " + destination + " уже имеется файл с таким именем.\n           Переименовываю его в " + old_file);
+			FSO.MoveFile(dest_file, destination + '\\' + old_file);
+		}
+		FSO.MoveFile(filename, destination);
+	}
+	if (!FSO.FileExists(filename)) return false; // false - "загружен с ошибкой - будем перекачивать"
+	switch (format) {
+		case "XMLEPD":
+		case "XMLESID":
+			xmlDoc.load (filename);
+			if (!xmlDoc.parseError.errorCode) {
+				// Извлекаем из документа все адреса получателей в массив Recipients
+				var To_arr = xmlDoc.getElementsByTagName("props:MessageInfo")[0].getElementsByTagName("props:To");
+				for (var i=0; i<To_arr.length; i++) {
+					Recipients.push(To_arr[i].childNodes[0].text);
+				}
+
+				if (IsRecipient(INI.Account.UEO_uic_work)){ // Логический адрес АРМ КБР
+					WriteLog("это "+format+" документ для АРМ КБР");
+					if (INI.Paths.pay_in){
+						MoveFile(filename, INI.Paths.pay_in + '\\'); // в каталог входящих платежных сообщений
+					}else{
+						WriteLog("!Каталог входящих платежных сообщений НЕ ЗАДАН");
+					}
+					return true; // true - "загружен успешно"
+				}
+
+				if (IsRecipient(INI.Account.UEO_uic_test)){ // Логический тестовый адрес АРМ КБР
+					WriteLog("это ТЕСТОВЫЙ "+format+" документ АРМ КБР");
+					if (INI.Paths.pay_test_in) {
+						MoveFile(filename, INI.Paths.pay_test_in + '\\'); // Каталог входящих тестовых платежных сообщений
+					}else{
+						WriteLog("!Каталог входящих тестовых платежных сообщений НЕ ЗАДАН");
+					}
+					return true; // true - "загружен успешно"
+				}
+
+				// Ни рабочий ни тестовый адрес нашего АРМ КБР в списке получателей не указан
+				WriteLog("!этот "+format+" документ адресован НЕ НАМ");
+				return true; // true - "загружен успешно"
+
+			} else {
+				WriteLog("!не читаемый "+format+" документ");
+				return false; // false - "загружен с ошибкой - будем перекачивать"
+			}
+		case "RECEIPT":
+			xmlDoc.load (filename);
+			if (!xmlDoc.parseError.errorCode) {
+				var receipt_info = xmlDoc.getElementsByTagName("props:AcknowledgementInfo")[0].getElementsByTagName("props:ResultText")[0].childNodes[0].text.match(/имя файла:\s*([^\s,]+)/)[1];
+
+				switch(xmlDoc.getElementsByTagName("props:MessageInfo")[0].getElementsByTagName("props:To")[0].childNodes[0].text){
+					case INI.Account.UEO_uic_work: // Логический адрес АРМ КБР
+						WriteLog("это квитанция о получении платежного документа " + receipt_info);
+						if (INI.Paths.pay_kvit) {
+							MoveFile(filename, INI.Paths.pay_kvit + '\\'); // в каталог квитанций на платежные сообщения
+						}else{
+							WriteLog("!Каталог квитанций на платежные сообщения НЕ ЗАДАН");
+						}
+						break;
+					case INI.Account.UEO_uic_test: // Логический тестовый адрес АРМ КБР
+						WriteLog("это квитанция о получении ТЕСТОВОГО платежного документа " + receipt_info);
+						if (INI.Paths.pay_test_kvit) {
+							MoveFile(filename, INI.Paths.pay_test_kvit + '\\'); // в каталог квитанций на тестовые платежные сообщения
+						}else{
+							WriteLog("!Каталог квитанций на тестовые платежные сообщения НЕ ЗАДАН");
+						}
+						break;
+					case INI.Account.from_addr: // Адрес отправителя файлов статистической отчетности
+						WriteLog("это квитанция о получении информационного сообщения " + receipt_info);
+						if (INI.Paths.stat_info_kvit) {
+							MoveFile(filename, INI.Paths.stat_info_kvit + '\\'); // в каталог квитанций на тестовые платежные сообщения
+						}else{
+							WriteLog("!Каталог квитанций на сообщения в статистику НЕ ЗАДАН");
+						}
+						break;
+					default:
+						WriteLog("это квитанция о получении НЕИЗВЕСТНОГО документа " + receipt_info);
+				}
+				return true; // true - "загружен успешно"
+			} else {
+				WriteLog("!не читаемая квитанция о получении документа");
+				return true; // true - "загружен успешно"
+			}
+		case "INFO":
+			WriteLog("это документ ПТК ПСД");
+			if (INI.Paths.stat_info_in) {
+				MoveFile(filename, INI.Paths.stat_info_in + '\\'); // в каталог входящих информационных и сообщений из статистики
+			}else{
+				WriteLog("!Каталог входящих информационных и сообщений из статистики НЕ ЗАДАН");
+			}
+			return true; // true - "загружен успешно"
+		default:
+			WriteLog("!документ НЕ ОБРАБОТАН. Неизвестный MessageFormat: " + format);
+			return true; // true - "загружен успешно"
+	}
+}
+
 // Обработка ответа сервера на запрос загрузки одного файла
 function FileDownload(response, race) {
-	// ------------------------------------------------
-	function CheckFile(filename, format, filesize) {
-		var Recipients = [];  // массив, хранящий адреса получателей сообщения
-		// Проверка, содержит ли сообщение рабочий или тестовый адрес нашего АРМ КБР
-		function IsRecipient(recipient){
-			for (var i in Recipients){
-				if (Recipients[i] == recipient) return true;
-			}
-			return false;
-		}
-		// Перемещение файла (с проверкой существования совпадающего имени в каталоге назначения)
-		function MoveFile(filename, destination){
-			var dest_file = destination + '\\' + FSO.GetFile(filename).Name;
-			if (FSO.FileExists(dest_file)) {
-				var File = FSO.GetFile(dest_file);
-				var dt = objDate(File.DateLastModified);
-				var old_file = File.Name + '.' + dt.year+dt.month+dt.day+dt.hours+dt.min+dt.sec;
-				WriteLog("! в каталоге " + destination + " уже имеется файл с таким именем.\n           Переименовываю его в " + old_file);
-				FSO.MoveFile(dest_file, destination + '\\' + old_file);
-			}
-			FSO.MoveFile(filename, destination);
-		}
-		if (FSO.FileExists(filename)) {
-			var resultsize = FSO.GetFile(filename).Size;
-			if ((resultsize == filesize) || (filesize==0)) {
-				switch (format) {
-					case "XMLEPD":
-					case "XMLESID":
-						xmlDoc.load (filename);
-						if (!xmlDoc.parseError.errorCode) {
-							// Извлекаем из документа все адреса получателей в массив Recipients
-							var To_arr = xmlDoc.getElementsByTagName("props:MessageInfo")[0].getElementsByTagName("props:To");
-							for (var i=0; i<To_arr.length; i++) {
-								Recipients.push(To_arr[i].childNodes[0].text);
-							}
-
-							if (IsRecipient(INI.Account.UEO_uic_work)){ // Логический адрес АРМ КБР
-								WriteLog("это "+format+" документ для АРМ КБР");
-								if (INI.Paths.pay_in){
-									MoveFile(filename, INI.Paths.pay_in + '\\'); // в каталог входящих платежных сообщений
-								}else{
-									WriteLog("!Каталог входящих платежных сообщений НЕ ЗАДАН");
-								}
-								return true; // true - "загружен успешно"
-							}
-
-							if (IsRecipient(INI.Account.UEO_uic_test)){ // Логический тестовый адрес АРМ КБР
-								WriteLog("это ТЕСТОВЫЙ "+format+" документ АРМ КБР");
-								if (INI.Paths.pay_test_in) {
-									MoveFile(filename, INI.Paths.pay_test_in + '\\');  // Каталог входящих тестовых платежных сообщений
-								}else{
-									WriteLog("!Каталог входящих тестовых платежных сообщений НЕ ЗАДАН");
-								}
-								return true; // true - "загружен успешно"
-							}
-
-							// Ни рабочий ни тестовый адрес нашего АРМ КБР в списке получателей не указан
-							WriteLog("!этот "+format+" документ адресован НЕ НАМ");
-							return true; // true - "загружен успешно"
-
-						} else {
-							WriteLog("!не читаемый "+format+" документ");
-							return false; // false - "загружен с ошибкой - будем перекачивать"
-						}
-					case "RECEIPT":
-						xmlDoc.load (filename);
-						if (!xmlDoc.parseError.errorCode) {
-							var receipt_info = xmlDoc.getElementsByTagName("props:AcknowledgementInfo")[0].getElementsByTagName("props:ResultText")[0].childNodes[0].text.match(/имя файла:\s*([^\s,]+)/)[1];
-
-							switch(xmlDoc.getElementsByTagName("props:MessageInfo")[0].getElementsByTagName("props:To")[0].childNodes[0].text){
-								case INI.Account.UEO_uic_work: // Логический адрес АРМ КБР
-									WriteLog("это квитанция о получении платежного документа " + receipt_info);
-									if (INI.Paths.pay_kvit) {
-										MoveFile(filename, INI.Paths.pay_kvit + '\\'); // в каталог квитанций на платежные сообщения
-									}else{
-										WriteLog("!Каталог квитанций на платежные сообщения НЕ ЗАДАН");
-									}
-									break;
-								case INI.Account.UEO_uic_test: // Логический тестовый адрес АРМ КБР
-									WriteLog("это квитанция о получении ТЕСТОВОГО платежного документа " + receipt_info);
-									if (INI.Paths.pay_test_kvit) {
-										MoveFile(filename, INI.Paths.pay_test_kvit + '\\'); // в каталог квитанций на тестовые платежные сообщения
-									}else{
-										WriteLog("!Каталог квитанций на тестовые платежные сообщения НЕ ЗАДАН");
-									}
-									break;
-								case INI.Account.from_addr: // Адрес отправителя файлов статистической отчетности
-									WriteLog("это квитанция о получении информационного сообщения " + receipt_info);
-									if (INI.Paths.stat_info_kvit) {
-										MoveFile(filename, INI.Paths.stat_info_kvit + '\\'); // в каталог квитанций на тестовые платежные сообщения
-									}else{
-										WriteLog("!Каталог квитанций на сообщения в статистику НЕ ЗАДАН");
-									}
-									break;
-								default:
-									WriteLog("это квитанция о получении НЕИЗВЕСТНОГО документа " + receipt_info);
-							}
-							return true; // true - "загружен успешно"
-						} else {
-							WriteLog("!не читаемая квитанция о получении документа");
-							return true; // true - "загружен успешно"
-						}
-					case "INFO":
-						WriteLog("это документ ПТК ПСД");
-						if (INI.Paths.stat_info_in) {
-							MoveFile(filename, INI.Paths.stat_info_in + '\\'); // в каталог входящих информационных и сообщений из статистики
-						}else{
-							WriteLog("!Каталог входящих информационных и сообщений из статистики НЕ ЗАДАН");
-						}
-						return true; // true - "загружен успешно"
-					default:
-						WriteLog("!документ НЕ ОБРАБОТАН. Неизвестный MessageFormat: " + format);
-						return true; // true - "загружен успешно"
-				}
-			} else {
-				WriteLog("!размер загруженного файла ["+resultsize+"] не совпадает с заявленным ["+filesize+"]");
-			}
-		}
-		return false; // false - "загружен с ошибкой - будем перекачивать"
-	}
-	// ------------------------------------------------
 	if (response.status == 200) {
 		var filespec = store_path + race.filename;
-		var filesize = Number(response.getResponseHeader("Content-Length"));
-		if (filesize == 0) WriteLog("!Ошибка получения размера файла " + race.filename + ". Загружаем без контроля.");
 		SaveBinaryData(filespec, response.responseBody);
+		WriteLog(race.filename + " загружен");
+		if ((ext_list) && (race.hash != MD5(filespec))) {
+			WriteLog("!Ошибка проверки хеша загруженного файла "+race.filename);
+			FSO.DeleteFile(filespec, true);
+			return;
+		}
 		if (INI.Paths.backup) Backup(filespec, "IN");
-		if (CheckFile(filespec, race.format, filesize)) {
-			WriteLog(race.filename + " загружен и проверен");
+		if (SortingFiles(filespec, race.format)) {
 			WriteLog("Удаление с сервера " + race.filename);
 			GetXMLdata(url_get + '?Method=Delete&InstanceID=' + race.id, FileDelete, race);
 			num_timer_onfinish = 0;
 			InitTimer(2);
 		} else {
-			WriteLog("!Ошибка проверки загруженного файла "+race.filename);
+			WriteLog("!Ошибка при сортировке загруженного файла "+race.filename);
 		}
 	} else {
 		WriteLog("!Ошибка загрузки "+race.filename+": " + response.statusText);
@@ -732,6 +731,10 @@ function GetList(response) {
 			file.format = GetNodeText(messageItem, "msglist:MessageFormat");
 			file.priority = GetNodeText(messageItem, "msglist:Priority");
 			file.filename = GetNodeText(messageItem, "msglist:LegacyTransportFileName");
+			if (ext_list) {
+				file.size = GetNodeText(messageItem, "msglist:MessageSize");
+				file.hash = GetNodeText(messageItem, "msglist:MessageHash");
+			}
 			if (file.format == 'RECEIPT') file.filename = file.id + '.RECEIPT';
 			files.push(file);
 			filelist += "\n\t" + file.time + "\t" + file.format + "\t" + file.filename;
@@ -778,8 +781,14 @@ function GetList(response) {
 			WriteLog('Ответ сервера на запрос списка: ' + response.status + ' ' + response.statusText + ' (Возможно нет файлов для загрузки)');
 		}
 	} else {
-		// При отсутствии списка сервер может вернуть 1223, 202, 200 (возможны и другие варианты...)
-		WriteLog('Ответ сервера на запрос списка: ' + response.status + ' ' + response.statusText + ' (Вероятно нет файлов для загрузки)');
+		if ((response.status == 405)||(response.status == 400)){
+			WriteLog('!Запрос расширенного листинга невозможен т.к. сервер использует устаревшее ПО. Будет использоваться сокращенный список. Контроль загруженных файлов производиться не будет.');
+			ext_list = false;
+			GetXMLdata(url_get + '?Method=List', GetList);
+		} else {
+			// При отсутствии списка сервер может вернуть 1223, 202, 200 (возможны и другие варианты...)
+			WriteLog('Ответ сервера на запрос списка: ' + response.status + ' ' + response.statusText + ' (Вероятно нет файлов для загрузки)');
+		}
 	}
 }
 
@@ -788,26 +797,28 @@ function Download() {
 	WshShell.RegWrite ("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\GlobalUserOffline", 0, "REG_DWORD");
 
 	if (INI.Account.web_login_info) {
-		WriteLog(' > Запрос списка платежных сообщений') 
+		WriteLog(' > Запрос списка платежных сообщений');
 	} else {
-		WriteLog(' > Запрос списка входящих сообщений') 
+		WriteLog(' > Запрос списка входящих сообщений');
 	}
 	web_login = INI.Account.web_login;
 	web_passw = INI.Account.web_passw;
-	GetXMLdata(url_get + '?Method=List', GetList);
+	var url_get_list = url_get + '?Method=ExtendedList';
+	if (!ext_list) url_get_list = url_get + '?Method=List';
+	GetXMLdata(url_get_list, GetList);
 
 	if (INI.Account.web_login_info){
 		WriteLog(' > Запрос списка информационных и сообщений из статистики');
 		web_login = INI.Account.web_login_info;
 		web_passw = INI.Account.web_passw_info;
-		GetXMLdata(url_get + '?Method=List', GetList);
+		GetXMLdata(url_get_list, GetList);
 	}
 
 	if (INI.Account.web_login_test){
 		WriteLog(' > Запрос списка тестовых платежных сообщений');
 		web_login = INI.Account.web_login_test;
 		web_passw = INI.Account.web_passw_test;
-		GetXMLdata(url_get + '?Method=List', GetList);
+		GetXMLdata(url_get_list, GetList);
 	}
 }
 
@@ -990,6 +1001,30 @@ function ActiveX_Init() {
 	XMLDOC_Init();
 }
 
+// Регистрация и инициализация XStandard Buffer ActiveX (http://www.xstandard.com/en/documentation/xbuffer/)
+function InitXBuffer() {
+	try {
+		objXBuffer = new ActiveXObject("XStandard.Buffer");
+	} catch(e) {
+		var title = "Установка XStandard Buffer ActiveX";
+		var buffer = script_path + '\\' + "XBuffer.dll";
+		if (WshShell.Popup("Для контроля загруженных файлов по MD5 хешу необходимо зарегистрировать XStandard Buffer ActiveX\nЗапустить процедуру регистрации?", 0, title, 36)!=6){
+			self.close();
+		}
+		if (!FSO.FileExists(buffer)){
+			WshShell.Popup("Файл XBuffer.dll в текущем каталоге\nО Т С У Т С Т В У Е Т !", 5, title, 48);
+			self.close();
+		}
+		WshShell.Run('regsvr32 "' + buffer + '"', 1, true);
+		try {
+			objXBuffer = new ActiveXObject("XStandard.Buffer");
+		} catch(e) {
+			WshShell.Popup("Ошибка при регистрации XBuffer.dll!", 5, title, 16);
+			self.close();
+		}
+	}
+}
+
 // Регистрация и инициализация Socket ActiveX
 function InitSocket() {
 	if (!INI.Account.telnet_host) return;
@@ -1058,6 +1093,18 @@ function ChkRestrictionsOnClick(){
 	}
 }
 
+</script>
+<script language="VBScript">
+Function MD5(fname)
+	objXBuffer.Reset
+	objXBuffer.Load fname
+	strHex = objXBuffer.MD5
+	objXBuffer.Reset
+	For i = 1 To Len(strHex) Step 2
+		objXBuffer.Write Chr("&H" & Mid(strHex, i, 2))
+	Next
+	MD5 = objXBuffer.Base64String
+End Function
 </script>
 </head><body onload="On_Load()">
 <table width="100%" height="100%" cellpadding="0" cellspacing="0" border="0">

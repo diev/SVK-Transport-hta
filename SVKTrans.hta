@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.10.1
+	version=1.10.2
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -644,12 +644,12 @@ function FileDownload(response, race) {
 	if (response.status == 200) {
 		var filespec = store_path + race.filename;
 		SaveBinaryData(filespec, response.responseBody);
-		WriteLog(race.filename + " загружен");
 		if ((ext_list) && (race.hash != MD5(filespec))) {
 			WriteLog("!Ошибка проверки хеша загруженного файла "+race.filename);
 			FSO.DeleteFile(filespec, true);
 			return;
 		}
+		WriteLog(race.filename + " загружен");
 		WriteLog("Удаление с сервера " + race.filename);
 		GetXMLdata(url_get + '?Method=Delete&InstanceID=' + race.id, FileDelete, race);
 		if (INI.Paths.backup) Backup(filespec, "IN");

@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.10.2
+	version=1.10.3
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -113,6 +113,7 @@ function WriteTextFile(filename, text) {
 // Чтение бинарного файла
 function ReadBinaryFile(filename) {
 	with (adoStream) {
+		if (State != 0) Close(); // Check adStateClosed
 		Type = 1; //adTypeBinary
 		Open();
 		LoadFromFile(filename);
@@ -126,6 +127,7 @@ function ReadBinaryFile(filename) {
 function SaveBinaryData(filename, byteArray) {
 	var adSaveCreateOverWrite = 2;
 	with (adoStream) {
+		if (State != 0) Close(); // Check adStateClosed
 		Type = 1; //adTypeBinary
 		Open();
 		Write (byteArray);
@@ -138,6 +140,7 @@ function SaveBinaryData(filename, byteArray) {
 function utf8base64(str) {
 	function utf8(str) {
 		with (adoStream) {
+			if (State != 0) Close(); // Check adStateClosed
 			Type = 2; // adTypeText
 			Charset = 'utf-8';
 			Open();
@@ -297,6 +300,7 @@ function ReadLog() {
 // Перекодировщик текста dos866 -> win1251
 function dos2win(text_in){
 	with (adoStream) {
+		if (State != 0) Close(); // Check adStateClosed
 		Open();
 		Type = 2;
 		Charset = 'windows-1251';

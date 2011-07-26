@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.10.3
+	version=1.10.4
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -599,7 +599,9 @@ function SortingFiles(filename, format) {
 			WriteLog("!этот " + format + " документ адресован НЕ НАМ");
 			break;
 		case "RECEIPT":
-			var receipt_info = xmlDoc.getElementsByTagName("props:AcknowledgementInfo")[0].getElementsByTagName("props:ResultText")[0].childNodes[0].text.match(/имя файла:\s*([^\s,]+)/)[1];
+			var receipt_info = xmlDoc.getElementsByTagName("props:AcknowledgementInfo")[0].getElementsByTagName("props:ResultText")[0].childNodes[0].text;
+			var fname = receipt_info.match(/имя файла:\s*([^\s,]+)/);
+			receipt_info = fname ? fname[1] : ': "'+receipt_info+'"';
 
 			switch(xmlDoc.getElementsByTagName("props:MessageInfo")[0].getElementsByTagName("props:To")[0].childNodes[0].text){
 				case INI.Account.UEO_uic_work: // Логический адрес АРМ КБР

@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.10.4
+	version=1.10.5
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -432,7 +432,7 @@ function Connect() {
 	Download();
 	Upload();
 	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-		StartTimer(0); // периодической проверка
+		StartTimer(0); // периодическая проверка
 	}
 	StartTimer(1); // проверка наличия исходящих сообщений
 }
@@ -542,7 +542,7 @@ function GetXMLdata(url, func, param) {
 		}
 	}
 	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-		StartTimer(0); // периодической проверка
+		StartTimer(0); // периодическая проверка
 	}
 	StartTimer(1); // проверка наличия исходящих сообщений
 	if (num_timer_onfinish == 2) StartTimer(2); // запрос ответа
@@ -892,7 +892,7 @@ function UploadFile(file, out_dir) {
 		default:
 			WriteLog("!это НЕИЗВЕСТНЫЙ ДОКУМЕНТ. Отправка прекращена");
 			if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-				StartTimer(0); // периодической проверка
+				StartTimer(0); // периодическая проверка
 			}
 			StartTimer(1); // проверка наличия исходящих сообщений
 			return;
@@ -914,13 +914,16 @@ function UploadFile(file, out_dir) {
 			case 412:
 				WriteLog('Удаляем файл ' + filename + ' .Он уже был отправлен.');
 				break;
+			default: // другой ответ сервера (считаем что файл не отправлен)
+				StartTimer(0); // периодическая проверка
+				return;
 		}
 		if (INI.Paths.backup) Backup(filepath, "OUT");
 		FSO.DeleteFile(filepath, true);
 		StartTimer(2); // запрос ответа на отправленное сообщение
 	}
 	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-		StartTimer(0); // периодической проверка
+		StartTimer(0); // периодическая проверка
 	}
 	StartTimer(1); // проверка наличия исходящих сообщений
 }
@@ -1090,7 +1093,7 @@ function On_Load() {
 	ShowTimers();
 	CheckRestrictions();
 	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-		StartTimer(0); // периодической проверка
+		StartTimer(0); // периодическая проверка
 	}
 	WriteLog('> === ' + document.title + '. Старт программы === <')
 }
@@ -1099,7 +1102,7 @@ function On_Load() {
 function ChkRestrictionsOnClick(){
 	if (TextRestrict.style.color == "red") {
 		if (!ChkRestrictions.checked){
-			StartTimer(0); // периодической проверка
+			StartTimer(0); // периодическая проверка
 		}else{
 			InitTimer(0);
 		}

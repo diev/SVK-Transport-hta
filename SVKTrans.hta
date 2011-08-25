@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.10.5
+	version=1.10.6
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -59,6 +59,7 @@ var url_post = 'http://' + INI.Account.svk_host + '/KbrReceive/';
 var web_login;
 var web_passw;
 var ext_list = true; // признак использования расширенного варианта листинга файлов
+var url_get_list = url_get + '?Method=' + (ext_list ? 'ExtendedList' : 'List');
 
 MakeAllDir();
 
@@ -789,7 +790,7 @@ function GetList(response) {
 		case 405:
 			WriteLog('!Запрос расширенного листинга невозможен т.к. сервер использует устаревшее ПО. Будет использоваться сокращенный список. Контроль загруженных файлов производиться не будет.');
 			ext_list = false;
-			GetXMLdata(url_get + '?Method=List', GetList);
+			url_get_list = url_get + '?Method=List';
 			break;
 		// ------------------------------------------------
 		default:
@@ -809,9 +810,8 @@ function Download() {
 	}
 	web_login = INI.Account.web_login;
 	web_passw = INI.Account.web_passw;
-	var url_get_list = url_get + '?Method=ExtendedList';
-	if (!ext_list) url_get_list = url_get + '?Method=List';
-	GetXMLdata(url_get_list, GetList);
+	if (ext_list) GetXMLdata(url_get_list, GetList);
+	if (!ext_list) GetXMLdata(url_get_list, GetList);
 
 	if (INI.Account.web_login_info){
 		WriteLog(' > Запрос списка информационных и сообщений из статистики');

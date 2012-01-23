@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.10.6
+	version=1.10.7
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -673,7 +673,6 @@ function GetList(response) {
 	// ------------------------------------------------
 	// Проверка, был загружен файл ранее или нет (по записи "* загружен" в сегодняшнем лог-файле)
 	function isFileDownloaded(filename) {
-		var text = '';
 		var re = new RegExp(filename + " загружен", "ig");
 		if (FSO.FileExists(logfilename)) {
 			if (FSO.GetFile(logfilename).Size > 0) {

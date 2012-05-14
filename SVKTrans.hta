@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.10.9
+	version=1.11.0
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -58,8 +58,7 @@ var url_get = 'http://' + INI.Account.svk_host + '/KbrInterface/System/Main.aspx
 var url_post = 'http://' + INI.Account.svk_host + '/KbrReceive/';
 var web_login;
 var web_passw;
-var ext_list = true; // признак использования расширенного варианта листинга файлов
-var url_get_list = url_get + '?Method=' + (ext_list ? 'ExtendedList' : 'List');
+var url_get_list = url_get + '?Method=ExtendedList';
 
 MakeAllDir();
 
@@ -656,7 +655,7 @@ function FileDownload(response, race) {
 	if (response.status == 200) {
 		var filespec = store_path + race.filename;
 		SaveBinaryData(filespec, response.responseBody);
-		if ((ext_list) && (race.hash != MD5(filespec))) {
+		if (race.hash != MD5(filespec)) {
 			WriteLog("!Ошибка проверки хеша загруженного файла "+race.filename);
 			FSO.DeleteFile(filespec, true);
 			return;
@@ -738,13 +737,11 @@ function GetList(response) {
 			file.format = GetNodeText(messageItem, "msglist:MessageFormat");
 			file.priority = GetNodeText(messageItem, "msglist:Priority");
 			file.filename = GetNodeText(messageItem, "msglist:LegacyTransportFileName");
-			if (ext_list) {
-				file.size = GetNodeText(messageItem, "msglist:MessageSize");
-				file.hash = GetNodeText(messageItem, "msglist:MessageHash");
-			}
+			file.size = GetNodeText(messageItem, "msglist:MessageSize");
+			file.hash = GetNodeText(messageItem, "msglist:MessageHash");
 			if (file.format == 'RECEIPT') file.filename = file.id + '.RECEIPT';
 			files.push(file);
-			filelist += "\n\t" + file.time + "\t" + file.format + "\t" + file.filename;
+			filelist += "\n\t" + file.time + "\t" + file.format + "\t" + file.filename + "\t" + file.size;
 		}
 
 		if (files.length!=0) {
@@ -792,9 +789,7 @@ function GetList(response) {
 		// ------------------------------------------------
 		case 400:
 		case 405:
-			WriteLog('!Запрос расширенного листинга невозможен т.к. сервер использует устаревшее ПО. Будет использоваться сокращенный список. Контроль загруженных файлов производиться не будет.');
-			ext_list = false;
-			url_get_list = url_get + '?Method=List';
+			WriteLog('!Ошибка при запросе расширенного листинга.');
 			break;
 		// ------------------------------------------------
 		default:
@@ -814,8 +809,7 @@ function Download() {
 	}
 	web_login = INI.Account.web_login;
 	web_passw = INI.Account.web_passw;
-	if (ext_list) GetXMLdata(url_get_list, GetList);
-	if (!ext_list) GetXMLdata(url_get_list, GetList);
+	GetXMLdata(url_get_list, GetList);
 
 	if (INI.Account.web_login_info){
 		WriteLog(' > Запрос списка информационных и сообщений из статистики');

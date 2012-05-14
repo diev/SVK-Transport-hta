@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.11.0
+	version=1.11.1
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -55,10 +55,10 @@ var Arr_Restrictions = []; // массив со всеми датами/врем
 
 var INI = ReadIniFile(script_path + '\\' + ini_filename);
 var url_get = 'http://' + INI.Account.svk_host + '/KbrInterface/System/Main.aspx';
+var url_get_list = url_get + '?Method=ExtendedList';
 var url_post = 'http://' + INI.Account.svk_host + '/KbrReceive/';
 var web_login;
 var web_passw;
-var url_get_list = url_get + '?Method=ExtendedList';
 
 MakeAllDir();
 
@@ -731,14 +731,15 @@ function GetList(response) {
 		var nodes = new Enumerator(xmlDoc.getElementsByTagName("msglist:MessageItem"));
 		for (; !nodes.atEnd(); nodes.moveNext()) {
 			var messageItem = nodes.item();
-			var file = {};
-			file.id = GetNodeText(messageItem, "msglist:InstanceID");
-			file.time = DateUTC2Local(GetNodeText(messageItem, "msglist:ReceiveTime"));
-			file.format = GetNodeText(messageItem, "msglist:MessageFormat");
-			file.priority = GetNodeText(messageItem, "msglist:Priority");
-			file.filename = GetNodeText(messageItem, "msglist:LegacyTransportFileName");
-			file.size = GetNodeText(messageItem, "msglist:MessageSize");
-			file.hash = GetNodeText(messageItem, "msglist:MessageHash");
+			var file = {
+				id:       GetNodeText(messageItem, "msglist:InstanceID"),
+				time:     DateUTC2Local(GetNodeText(messageItem, "msglist:ReceiveTime")),
+				format:   GetNodeText(messageItem, "msglist:MessageFormat"),
+				priority: GetNodeText(messageItem, "msglist:Priority"),
+				filename: GetNodeText(messageItem, "msglist:LegacyTransportFileName"),
+				size:     GetNodeText(messageItem, "msglist:MessageSize"),
+				hash:     GetNodeText(messageItem, "msglist:MessageHash")
+			};
 			if (file.format == 'RECEIPT') file.filename = file.id + '.RECEIPT';
 			files.push(file);
 			filelist += "\n\t" + file.time + "\t" + file.format + "\t" + file.filename + "\t" + file.size;

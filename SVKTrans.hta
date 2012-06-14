@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=1.11.2
+	version=2.0.0
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -28,7 +28,7 @@
 	input#TimerVisible {font-family:Courier; font-weight:bold; font-size:12pt; width:50pt; text-align:center; color:blue;}
 	input#TimerHidden {display:none;}
 </style>
-<script language="JavaScript">
+<script type="text/javascript">
 var app_name = SVKTrans.applicationName.replace(/_/g,' ');
 document.title = app_name + ' - ' + SVKTrans.version;
 window.resizeTo(550, 360); // начальный размер окна приложения (выставляйте по вкусу)
@@ -110,30 +110,39 @@ function WriteTextFile(filename, text) {
 	}
 }
 
-// Чтение бинарного файла
-function ReadBinaryFile(filename) {
+// Читает файл в массив из сегментов заданного размера
+function ReadFileSegments(filename) {
 	with (adoStream) {
 		if (State != 0) Close(); // Check adStateClosed
 		Type = 1; //adTypeBinary
 		Open();
 		LoadFromFile(filename);
-		var data = Read();
-		Close();
+		var data = [], i = 0, d;
+		do {
+			d = INI.Config.segment_size_upload ? Read(INI.Config.segment_size_upload) : Read();
+			if (d == null) {
+				Close();
+				return data;
+			} else {
+				data[i] = d;
+				i++;
+			}
+		} while (true);
 	}
-	return data;
 }
 
-// Запись данных в бинарный файл
-function SaveBinaryData(filename, byteArray) {
-	var adSaveCreateOverWrite = 2;
-	with (adoStream) {
-		if (State != 0) Close(); // Check adStateClosed
-		Type = 1; //adTypeBinary
-		Open();
-		Write (byteArray);
-		SaveToFile (filename, adSaveCreateOverWrite);
-		Close();
+// Возвращает MD5 файла в HEX виде, закодированный в base64
+// (используется ActiveX "XStandard.Buffer" и VB ф-ция Chr)
+function MD5(fname){
+	objXBuffer.Reset();
+	objXBuffer.Load (fname);
+	var strHex = objXBuffer.MD5;
+	objXBuffer.Reset();
+	for (var i = 0; i < strHex.length; i+=2) {
+		var ch = ASCIIChar(Number('0x'+strHex.substr(i,2)));
+		objXBuffer.Write(ch);
 	}
+	return objXBuffer.Base64String;
 }
 
 // Кодирование в base64
@@ -158,6 +167,23 @@ function utf8base64(str) {
 		nodeTypedValue = utf8(str);
 		return text;
 	}
+}
+
+// Возвращает строку, состоящую из num символов chr
+function Space(chr, num) {
+	return new Array(num + 1).join(chr);
+}
+
+// Генерация GUID
+function GUID() {
+	var result, i, j;
+	result = '';
+	for (j=0; j<32; j++) {
+		if (j == 8 || j == 12 || j == 16 || j == 20) result = result + '-';
+		i = Math.floor(Math.random()*16).toString(16);
+		result = result + i;
+	}
+	return result;
 }
 
 // Чтение ini файла в объект (откуда затем берутся значения ключей)
@@ -259,16 +285,25 @@ function Backup(filename, direction) {
 
 // Запись лога в textarea и в файл (Предупреждения выводятся в MsgBox и отправляются администратору)
 function WriteLog(message) {
+	if (/^#(\d*)/.test(message)) { // Если сообщение начинается с #
+		if (RegExp.$1) { // инициализация "прогресс-бара"
+			idLog.insertAdjacentText('BeforeEnd', Space('0', Number(RegExp.$1)) + '\r\n');
+		} else {         // заполнение очередной ячейки "прогресс-бара"
+			idLog.innerText = idLog.innerText.replace(/0(0*)$/, '#$1\r\n');
+		}
+		return;
+	}
+
 	var dt = objDate();
 	var log_message = '['+dt.hours+':'+dt.min+'.'+dt.sec+'] ' + message + '\r\n';
 	log_message = log_message.replace(/(^\[\d\d:\d\d\.\d\d\] > )/, '\r\n$1');
 
 	if (dt.day != current_day) {
-		Log.value = "";
+		idLog.value = "";
 		current_day = dt.day;
 	}
-	Log.insertAdjacentText('BeforeEnd', log_message);
-	Log.scrollTop = Log.scrollHeight;
+	idLog.insertAdjacentText('BeforeEnd', log_message);
+	idLog.scrollTop = idLog.scrollHeight;
 
 	logfilename = store_path + dt.year + dt.month + dt.day + ".log";
 	var file = FSO.OpenTextFile(logfilename, 8, true);
@@ -291,8 +326,8 @@ function ReadLog() {
 			var file = FSO.OpenTextFile(logfilename);
 			text = file.ReadAll();
 			file.Close();
-			Log.insertAdjacentText('BeforeEnd', text);
-			setTimeout('Log.scrollTop = Log.scrollHeight;', 1000);
+			idLog.insertAdjacentText('BeforeEnd', text);
+			setTimeout('idLog.scrollTop = idLog.scrollHeight;', 1000);
 		}
 	}
 }
@@ -360,6 +395,7 @@ function InitAllTimers() {
 
 // Разрешаем таймеру уменьшать оставшееся время
 function StartTimer(num) {
+	if ((num == 0) && (ChkRestrictions.checked) && (TextRestrict.style.color == "red")) return;
 	TimerVisible[num].disabled = false;
 }
 
@@ -436,9 +472,7 @@ function Connect() {
 	online = true;
 	Download();
 	Upload();
-	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-		StartTimer(0); // периодическая проверка
-	}
+	StartTimer(0); // периодическая проверка
 	StartTimer(1); // проверка наличия исходящих сообщений
 }
 
@@ -546,9 +580,7 @@ function GetXMLdata(url, func, param) {
 			return;
 		}
 	}
-	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-		StartTimer(0); // периодическая проверка
-	}
+	StartTimer(0); // периодическая проверка
 	StartTimer(1); // проверка наличия исходящих сообщений
 	if (num_timer_onfinish == 2) StartTimer(2); // запрос ответа
 }
@@ -650,34 +682,62 @@ function SortingFiles(filename, format) {
 	}
 }
 
-// Обработка ответа сервера на запрос загрузки одного файла
+// Обработка ответа сервера на запрос загрузки сегмента файла или одного файла
 function FileDownload(response, race) {
-	if (response.status == 200) {
-		var filespec = store_path + race.filename;
-		SaveBinaryData(filespec, response.responseBody);
-		if (race.hash != MD5(filespec)) {
-			WriteLog("!Ошибка проверки хеша загруженного файла "+race.filename);
-			FSO.DeleteFile(filespec, true);
+	// Проверка размера загруженных сегментов
+	function CheckSize(race){
+		if (race.segment_number == race.segments_count) {
+			return race.Stream.Size == race.size;
+		} else {
+			return race.Stream.Size == race.segment_number * INI.Config.segment_size_download;
+		}
+	}
+
+	if ((response.status == 200)||(response.status == 204)) {
+		race.Stream.Write(response.responseBody);
+		if (CheckSize(race)) {
+			if (race.segments_count > 1) {
+				// WriteLog(race.segment_number + " сегмент загружен");
+				WriteLog("#");
+			} else {
+				// WriteLog(race.filename + " загружен");
+			}
+		} else {
+			race.Stream.Close();
+			WriteLog("!Ошибка проверки размера файла "+race.filename);
 			return;
 		}
-		WriteLog(race.filename + " загружен");
-		WriteLog("Удаление с сервера " + race.filename);
-		GetXMLdata(url_get + '?Method=Delete&InstanceID=' + race.id, FileDelete, race);
-		if (INI.Paths.backup) Backup(filespec, "IN");
-		SortingFiles(filespec, race.format);
-		num_timer_onfinish = 0;
-		InitTimer(2);
+
+		if ((race.segments_count == 1) || (race.segment_number == race.segments_count) || (response.status == 204)) {
+			WriteLog(race.filename + " загружен полностью");
+			var filespec = store_path + race.filename;
+			race.Stream.SaveToFile (filespec, 2); // adSaveCreateOverWrite
+			race.Stream.Close();
+			var file_hash = MD5(filespec);
+			if (race.hash != file_hash) {
+				WriteLog("!Ошибка проверки хеша файла "+race.filename);
+				FSO.DeleteFile(filespec, true);
+				return;
+			}
+			WriteLog(race.filename + "@ сохранен. MD5 хеш проверен");
+			if (INI.Paths.backup) Backup(filespec, "IN");
+			SortingFiles(filespec, race.format);
+			WriteLog("Удаление с сервера " + race.filename);
+			GetXMLdata(url_get + '?Method=Delete&InstanceID=' + race.id, FileDelete, race);
+			num_timer_onfinish = 0;
+			InitTimer(2);
+		}
 	} else {
-		WriteLog("!Ошибка загрузки "+race.filename+": " + response.statusText);
+		WriteLog("!Ошибка загрузки "+race.segment_number+" сегмента файла "+race.filename+": " + response.statusText);
 	}
 }
 
 // Обработка ответа сервера на запрос XML списка рейсов
 function GetList(response) {
 	// ------------------------------------------------
-	// Проверка, был загружен файл ранее или нет (по записи "* загружен" в сегодняшнем лог-файле)
+	// Проверка, был загружен файл ранее или нет (по записи "filename.ext@" в сегодняшнем лог-файле)
 	function isFileDownloaded(filename) {
-		var re = new RegExp(filename + " загружен", "ig");
+		var re = new RegExp(filename + "@", "ig");
 		if (FSO.FileExists(logfilename)) {
 			if (FSO.GetFile(logfilename).Size > 0) {
 				var file = FSO.OpenTextFile(logfilename);
@@ -771,8 +831,31 @@ function GetList(response) {
 								GetXMLdata(url_get + '?Method=Delete&InstanceID=' + races[i].id, FileDelete, races[i]);
 							} else {
 								if (!isFileDownloaded(races[i].filename)) {
-									WriteLog(" > Загрузка " + races[i].filename);
-									GetXMLdata(url_get + '?Method=Download&InstanceID=' + races[i].id, FileDownload, races[i]);
+									races[i].segments_count = 1;
+									if ((INI.Config) && (INI.Config.segment_size_download)) {
+										races[i].segments_count = Math.ceil(races[i].size/INI.Config.segment_size_download);
+									}
+									// Открываем Stream. В него будем грузить сегменты (или содержимое файла целиком)
+									races[i].Stream = new ActiveXObject("ADODB.Stream");
+									races[i].Stream.Type = 1; //adTypeBinary
+									races[i].Stream.Open();
+									// -----------------------------------------------------
+									if (races[i].segments_count > 1) { // Загрузка файла по сегментам
+										WriteLog(" > Загрузка " + races[i].filename + " (" + races[i].size + " байт. " + races[i].segments_count + " сегментов)");
+										WriteLog("#" + races[i].segments_count);
+										for (var n = 1; n <= races[i].segments_count; n++) {
+											var start = INI.Config.segment_size_download * (n-1);
+											var url_get_seg = url_get + '?Method=Download&InstanceID=' + races[i].id + '&Start=' + start + '&Count=' + INI.Config.segment_size_download;
+											races[i].segment_number = n;
+											GetXMLdata(url_get_seg, FileDownload, races[i]);
+										}
+									// -----------------------------------------------------
+									} else { // Загрузка файла одним куском
+										WriteLog(" > Загрузка " + races[i].filename + " (" + races[i].size + " байт)");
+										races[i].segment_number = 1;
+										GetXMLdata(url_get + '?Method=Download&InstanceID=' + races[i].id, FileDownload, races[i]);
+									}
+									// -----------------------------------------------------
 								} else {
 									WriteLog("!Файл " + races[i].filename + " был загружен ранее");
 									WriteLog("Удаление с сервера " + races[i].filename);
@@ -833,7 +916,7 @@ function Download() {
 //=====================================================
 
 // Отправка одного файла
-function UploadFile(file, out_dir) {
+function UploadFile(file, out_dir, data, segment_number, segments_count, guid) {
 	httpRequest.onreadystatechange = function() {
 		if (httpRequest.readyState == 4) {
 			switch(httpRequest.status){
@@ -855,7 +938,6 @@ function UploadFile(file, out_dir) {
 	var filename = file.Name;
 	var filename64 = utf8base64(filename);
 	var filepath = file.Path;
-	var data = ReadBinaryFile(filepath);
 	//------------------------------------------------
 	// Общие заголовки
 	httpRequest.setRequestHeader("User-Agent", app_name + ' ' + SVKTrans.version); // не обязателен
@@ -869,49 +951,52 @@ function UploadFile(file, out_dir) {
 	switch(out_dir){
 		case INI.Paths.stat_info_out:
 			// Заголовки для информационных сообщений и статистики
-			WriteLog("это документ ПТК ПСД");
 			httpRequest.setRequestHeader('Content-Type', 'application/info');
 			httpRequest.setRequestHeader('LegacyTransport-FileName', filename64);
 			httpRequest.setRequestHeader('To', INI.Account.to_addr); // Адрес получателя файлов статистической отчетности
 			break;
 		case INI.Paths.pay_out:
 			// Заголовки для платежек
-			WriteLog("это документ АРМ КБР");
 			httpRequest.setRequestHeader('Content-Type','application/xmlepd');
 			// httpRequest.setRequestHeader('To', 'uic:220200199800'); // Пользователь для обмена с ЦОИ (на этот адрес мы отсылаем платежки)
 			// для платежных xml сообщений заголовок 'To' игнорируется, т.к. ЦОИ анализирует одноименный нод в теле xml сообщения
 			break;
 		case INI.Paths.pay_test_out:
 			// Заголовки для тестовых платежек
-			WriteLog("это ТЕСТОВЫЙ документ АРМ КБР");
 			httpRequest.setRequestHeader('Content-Type','application/xmlepd');
 			// httpRequest.setRequestHeader('To', 'uic:220200199811'); // Пользователь для тестового обмена с ЦОИ (на этот адрес мы отсылаем тесты)
 			// для платежных xml сообщений заголовок 'To' игнорируется, т.к. ЦОИ анализирует одноименный нод в теле xml сообщения
 			break;
-		default:
-			WriteLog("!это НЕИЗВЕСТНЫЙ ДОКУМЕНТ. Отправка прекращена");
-			if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-				StartTimer(0); // периодическая проверка
-			}
-			StartTimer(1); // проверка наличия исходящих сообщений
-			return;
 	}
-	//------------------------------------------------
+
+	if (segment_number) { // Дополнительные заголовки для сегментированных файлов
+		httpRequest.setRequestHeader('Segmentation-MessageID', guid);
+		httpRequest.setRequestHeader('Segmentation-Number', segment_number);
+		httpRequest.setRequestHeader('Segmentation-Count', segments_count);
+	}
+
 	try {
 		httpRequest.send(data);
-	} catch(err) {
-		WriteLog("!Ошибка при открытии " + url_post);
-		online = false;
-		StartTimer(3); // повтор неудавшегося подключения
-		return;
-	}
-	if (!err) {
 		switch(httpRequest.status){
 			case 202:
-				WriteLog('файл ' + filename + ' успешно отправлен');
-				break;
+				if (segment_number) {
+					if (httpRequest.statusText == 'Segment accepted') {
+						// WriteLog(segment_number + '-й сегмент успешно отправлен');
+						WriteLog("#");
+						if (segment_number != segments_count) return;
+						break;
+					}
+				} else {
+					WriteLog('файл ' + filename + ' успешно отправлен');
+					break;
+				}
 			case 412:
-				WriteLog('Удаляем файл ' + filename + ' .Он уже был отправлен.');
+				if (segment_number) {
+					// WriteLog('Последний сегмент файла ' + filename + ' успешно отправлен.');
+					WriteLog("#");
+				} else {
+					WriteLog('Удаляем файл ' + filename + ' .Он уже был отправлен.');
+				}
 				break;
 			default: // другой ответ сервера (считаем что файл не отправлен)
 				StartTimer(0); // периодическая проверка
@@ -920,11 +1005,13 @@ function UploadFile(file, out_dir) {
 		if (INI.Paths.backup) Backup(filepath, "OUT");
 		FSO.DeleteFile(filepath, true);
 		StartTimer(2); // запрос ответа на отправленное сообщение
-	}
-	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
 		StartTimer(0); // периодическая проверка
+		StartTimer(1); // проверка наличия исходящих сообщений
+	} catch(err) {
+		WriteLog("!Ошибка при открытии " + url_post);
+		online = false;
+		StartTimer(3); // повтор неудавшегося подключения
 	}
-	StartTimer(1); // проверка наличия исходящих сообщений
 }
 
 // Проверка папок с файлами на отправку
@@ -936,29 +1023,53 @@ function Upload() {
 			for (; !files.atEnd(); files.moveNext()) {
 				if (online) {
 					var file = files.item();
-					WriteLog(' > Отправка файла ' + file.Name);
-					UploadFile(file, dir);
+					var file_data = ReadFileSegments(file.Path);
+					var segments_count = file_data.length;
+					if (segments_count > 1) { // Отправка файла сегментами
+						WriteLog(' > Отправка файла ' + file.Name + ' (' + file.Size + ' байт. ' + segments_count + ' сегментов)');
+						WriteLog("#" + segments_count);
+						var guid = GUID();
+						for (var i=0; i<segments_count; i++) {
+							UploadFile(file, dir, file_data[i], i+1, segments_count, guid);
+						}
+					} else { // Отправка файла одним куском
+						WriteLog(' > Отправка файла ' + file.Name + ' (' + file.Size + ' байт)');
+						UploadFile(file, dir, file_data[0]);
+					}
 				}
 			}
-		}else{
+		} else {
 			WriteLog('!Каталог "' + dir + '" отсутствует');
 		}
 	}
+
+	// Исходящие платежные сообщения
 	web_login = INI.Account.web_login;
 	web_passw = INI.Account.web_passw;
-	if (INI.Paths.pay_out) EnumerateFiles(INI.Paths.pay_out);      // Каталог исходящих платежных сообщений
+	if ((INI.Paths.pay_out) && (FSO.GetFolder(INI.Paths.pay_out).Files.Count > 0)) {
+		WriteLog(" > Отправка платежных сообщений:");
+		EnumerateFiles(INI.Paths.pay_out);
+	}
 
+	// Исходящие информационные и сообщения в статистику
 	if (INI.Account.web_login_info){
 		web_login = INI.Account.web_login_info;
 		web_passw = INI.Account.web_passw_info;
 	}
-	if (INI.Paths.stat_info_out) EnumerateFiles(INI.Paths.stat_info_out);     // Каталог исходящих информационных и сообщений в статистику
+	if ((INI.Paths.stat_info_out) && (FSO.GetFolder(INI.Paths.stat_info_out).Files.Count > 0)) {
+		WriteLog(" > Отправка документов ПТК ПСД:");
+		EnumerateFiles(INI.Paths.stat_info_out);
+	}
 
+	// Исходящие тестовые платежные сообщения
 	if (INI.Account.web_login_test){
 		web_login = INI.Account.web_login_test;
 		web_passw = INI.Account.web_passw_test;
 	}
-	if (INI.Paths.pay_test_out) EnumerateFiles(INI.Paths.pay_test_out); // Каталог исходящих тестовых платежных сообщений
+	if ((INI.Paths.pay_test_out) && (FSO.GetFolder(INI.Paths.pay_test_out).Files.Count > 0)) {
+		WriteLog(" > Отправка ТЕСТОВЫХ платежных документов:");
+		EnumerateFiles(INI.Paths.pay_test_out);
+	}
 }
 
 
@@ -1091,9 +1202,7 @@ function On_Load() {
 	StartTimer(1); // проверка наличия исходящих сообщений
 	ShowTimers();
 	CheckRestrictions();
-	if ( (!ChkRestrictions.checked) || (TextRestrict.style.color != "red") ) {
-		StartTimer(0); // периодическая проверка
-	}
+	StartTimer(0); // периодическая проверка
 	WriteLog('> === ' + document.title + '. Старт программы === <')
 }
 
@@ -1109,16 +1218,9 @@ function ChkRestrictionsOnClick(){
 }
 
 </script>
-<script language="VBScript">
-Function MD5(fname)
-	objXBuffer.Reset
-	objXBuffer.Load fname
-	strHex = objXBuffer.MD5
-	objXBuffer.Reset
-	For i = 1 To Len(strHex) Step 2
-		objXBuffer.Write Chr("&H" & Mid(strHex, i, 2))
-	Next
-	MD5 = objXBuffer.Base64String
+<script type="text/vbscript">
+Function ASCIIChar(code)
+	ASCIIChar = Chr(code)
 End Function
 </script>
 </head><body onload="On_Load()">
@@ -1150,7 +1252,7 @@ End Function
 	<tr height="30px"><td align="center">
 		<button onClick="num_timer_onfinish=4; Connect()" hidefocus>Установить соединение немедленно</button>
 	<tr height="100%"><td>
-		<textarea style="width:100%; height:100%;" id=Log></textarea>
+		<textarea style="width:100%; height:100%;" id=idLog></textarea>
 </table>
 </body>
 </html>

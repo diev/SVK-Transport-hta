@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=2.1.0
+	version=2.2.0
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -186,31 +186,32 @@ function GUID() {
 	return result;
 }
 
-// Чтение ini файла в объект (откуда затем берутся значения ключей)
+// Чтение ini файла в объект со свойствами идентичными именам ключей
 function ReadIniFile(ini_file) {
-	if (FSO.FileExists(ini_file)) {
-		if (FSO.GetFile(ini_file).Size > 0) {
-			var objINI = {};
-			with (FSO.OpenTextFile(ini_file)) {
-				var text = ReadAll();
-				Close();
-				var arr_lines = text.split('\n');
-				var section, param, value;
-				for (var i in arr_lines){
-					if (/^\[(\w+)\]/.test(arr_lines[i])){
-						section = RegExp.$1;
-						objINI[section] = {};
-					}
-					if (/^([^;#][^=]*?)\s*=\s*([^\r\n]*?)\s*$/.test(arr_lines[i])){
-						param = RegExp.$1;
-						value = RegExp.$2;
-						objINI[section][param] = value;
-					}
+	var oINI = {};
+	if ((FSO.FileExists(ini_file)) && (FSO.GetFile(ini_file).Size > 0)) {
+		with (FSO.OpenTextFile(ini_file)) {
+			var text = ReadAll();
+			Close();
+		}
+		var arr_lines = text.match(/[^\r\n]+/g);
+		var section, param, value;
+		for(var i = 0, line; line = arr_lines[i++];) {
+			line = line.replace(/^\s*/, '').replace(/\s*$/, '');
+			if (!/^[;#]/.test(line)) {        // comment
+				if (/^\[(.+)\]/.test(line)) { // section
+					section = RegExp.$1;
+					if ((section) && (!oINI[section])) oINI[section] = {};
+				}
+				else if (/^(.+?)\s*=\s*(.+)/.test(line)){ // param=value
+					param = RegExp.$1;
+					value = RegExp.$2;
+					if (param && value) oINI[section][param] = value;
 				}
 			}
-			return objINI;
 		}
 	}
+	return oINI;
 }
 
 // Возвращает дату и время в удобоваримом виде (как объект)

@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=2.0.0
+	version=2.1.0
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -285,15 +285,6 @@ function Backup(filename, direction) {
 
 // Запись лога в textarea и в файл (Предупреждения выводятся в MsgBox и отправляются администратору)
 function WriteLog(message) {
-	if (/^#(\d*)/.test(message)) { // Если сообщение начинается с #
-		if (RegExp.$1) { // инициализация "прогресс-бара"
-			idLog.insertAdjacentText('BeforeEnd', Space('0', Number(RegExp.$1)) + '\r\n');
-		} else {         // заполнение очередной ячейки "прогресс-бара"
-			idLog.innerText = idLog.innerText.replace(/0(0*)$/, '#$1\r\n');
-		}
-		return;
-	}
-
 	var dt = objDate();
 	var log_message = '['+dt.hours+':'+dt.min+'.'+dt.sec+'] ' + message + '\r\n';
 	log_message = log_message.replace(/(^\[\d\d:\d\d\.\d\d\] > )/, '\r\n$1');
@@ -306,9 +297,10 @@ function WriteLog(message) {
 	idLog.scrollTop = idLog.scrollHeight;
 
 	logfilename = store_path + dt.year + dt.month + dt.day + ".log";
-	var file = FSO.OpenTextFile(logfilename, 8, true);
-	file.Write(log_message);
-	file.Close();
+	with (FSO.OpenTextFile(logfilename, 8, true)) {
+		Write(log_message);
+		Close();
+	}
 	if (/^!/.test(message)) { // Если сообщение начинается с восклицательного знака, то выводим MsgBox
 		// WshShell.Popup(message, 5, "SVK Transport ERROR", 48);
 		if (INI.Account.messages_recipient){ // получатель сообщения о ошибке скрипта
@@ -693,15 +685,10 @@ function FileDownload(response, race) {
 		}
 	}
 
-	if ((response.status == 200)||(response.status == 204)) {
+	if ((response.status == 200) || (response.status == 204)) {
 		race.Stream.Write(response.responseBody);
 		if (CheckSize(race)) {
-			if (race.segments_count > 1) {
-				// WriteLog(race.segment_number + " сегмент загружен");
-				WriteLog("#");
-			} else {
-				// WriteLog(race.filename + " загружен");
-			}
+			if (race.segments_count > 1) WriteLog(race.segment_number + " сегмент загружен");
 		} else {
 			race.Stream.Close();
 			WriteLog("!Ошибка проверки размера файла "+race.filename);
@@ -709,7 +696,7 @@ function FileDownload(response, race) {
 		}
 
 		if ((race.segments_count == 1) || (race.segment_number == race.segments_count) || (response.status == 204)) {
-			WriteLog(race.filename + " загружен полностью");
+			WriteLog(race.filename + " загружен целиком");
 			var filespec = store_path + race.filename;
 			race.Stream.SaveToFile (filespec, 2); // adSaveCreateOverWrite
 			race.Stream.Close();
@@ -842,7 +829,6 @@ function GetList(response) {
 									// -----------------------------------------------------
 									if (races[i].segments_count > 1) { // Загрузка файла по сегментам
 										WriteLog(" > Загрузка " + races[i].filename + " (" + races[i].size + " байт. " + races[i].segments_count + " сегментов)");
-										WriteLog("#" + races[i].segments_count);
 										for (var n = 1; n <= races[i].segments_count; n++) {
 											var start = INI.Config.segment_size_download * (n-1);
 											var url_get_seg = url_get + '?Method=Download&InstanceID=' + races[i].id + '&Start=' + start + '&Count=' + INI.Config.segment_size_download;
@@ -981,8 +967,7 @@ function UploadFile(file, out_dir, data, segment_number, segments_count, guid) {
 			case 202:
 				if (segment_number) {
 					if (httpRequest.statusText == 'Segment accepted') {
-						// WriteLog(segment_number + '-й сегмент успешно отправлен');
-						WriteLog("#");
+						WriteLog(segment_number + '-й сегмент успешно отправлен');
 						if (segment_number != segments_count) return;
 						break;
 					}
@@ -992,8 +977,7 @@ function UploadFile(file, out_dir, data, segment_number, segments_count, guid) {
 				}
 			case 412:
 				if (segment_number) {
-					// WriteLog('Последний сегмент файла ' + filename + ' успешно отправлен.');
-					WriteLog("#");
+					WriteLog('Последний сегмент файла ' + filename + ' успешно отправлен.');
 				} else {
 					WriteLog('Удаляем файл ' + filename + ' .Он уже был отправлен.');
 				}

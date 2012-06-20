@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=2.2.0
+	version=2.2.1
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -829,7 +829,7 @@ function GetList(response) {
 									races[i].Stream.Open();
 									// -----------------------------------------------------
 									if (races[i].segments_count > 1) { // Загрузка файла по сегментам
-										WriteLog(" > Загрузка " + races[i].filename + " (" + races[i].size + " байт. " + races[i].segments_count + " сегментов)");
+										WriteLog("> Загрузка " + races[i].filename + " (" + races[i].size + " байт. " + races[i].segments_count + " сегментов)");
 										for (var n = 1; n <= races[i].segments_count; n++) {
 											var start = INI.Config.segment_size_download * (n-1);
 											var url_get_seg = url_get + '?Method=Download&InstanceID=' + races[i].id + '&Start=' + start + '&Count=' + INI.Config.segment_size_download;
@@ -838,7 +838,7 @@ function GetList(response) {
 										}
 									// -----------------------------------------------------
 									} else { // Загрузка файла одним куском
-										WriteLog(" > Загрузка " + races[i].filename + " (" + races[i].size + " байт)");
+										WriteLog("> Загрузка " + races[i].filename + " (" + races[i].size + " байт)");
 										races[i].segment_number = 1;
 										GetXMLdata(url_get + '?Method=Download&InstanceID=' + races[i].id, FileDownload, races[i]);
 									}
@@ -1012,7 +1012,6 @@ function Upload() {
 					var segments_count = file_data.length;
 					if (segments_count > 1) { // Отправка файла сегментами
 						WriteLog(' > Отправка файла ' + file.Name + ' (' + file.Size + ' байт. ' + segments_count + ' сегментов)');
-						WriteLog("#" + segments_count);
 						var guid = GUID();
 						for (var i=0; i<segments_count; i++) {
 							UploadFile(file, dir, file_data[i], i+1, segments_count, guid);
@@ -1032,7 +1031,7 @@ function Upload() {
 	web_login = INI.Account.web_login;
 	web_passw = INI.Account.web_passw;
 	if ((INI.Paths.pay_out) && (FSO.GetFolder(INI.Paths.pay_out).Files.Count > 0)) {
-		WriteLog(" > Отправка платежных сообщений:");
+		WriteLog("> Отправка платежных сообщений:");
 		EnumerateFiles(INI.Paths.pay_out);
 	}
 
@@ -1042,7 +1041,7 @@ function Upload() {
 		web_passw = INI.Account.web_passw_info;
 	}
 	if ((INI.Paths.stat_info_out) && (FSO.GetFolder(INI.Paths.stat_info_out).Files.Count > 0)) {
-		WriteLog(" > Отправка документов ПТК ПСД:");
+		WriteLog("> Отправка документов ПТК ПСД:");
 		EnumerateFiles(INI.Paths.stat_info_out);
 	}
 
@@ -1052,7 +1051,7 @@ function Upload() {
 		web_passw = INI.Account.web_passw_test;
 	}
 	if ((INI.Paths.pay_test_out) && (FSO.GetFolder(INI.Paths.pay_test_out).Files.Count > 0)) {
-		WriteLog(" > Отправка ТЕСТОВЫХ платежных документов:");
+		WriteLog("> Отправка ТЕСТОВЫХ платежных документов:");
 		EnumerateFiles(INI.Paths.pay_test_out);
 	}
 }

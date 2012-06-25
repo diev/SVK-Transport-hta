@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=2.2.1
+	version=2.3.0
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -288,9 +288,11 @@ function Backup(filename, direction) {
 function WriteLog(message) {
 	var dt = objDate();
 	var log_message = '['+dt.hours+':'+dt.min+'.'+dt.sec+'] ' + message + '\r\n';
-	log_message = log_message.replace(/(^\[\d\d:\d\d\.\d\d\] > )/, '\r\n$1');
+	if (/^ /.test(message)) { // Если сообщение начинается с пробела, то добавляем пустую строку перед ним
+		log_message = '\r\n' + log_message;
+	}
 
-	if (dt.day != current_day) {
+	if (dt.day != current_day) { // Очищаем textarea idLog первым сообщением нового дня
 		idLog.value = "";
 		current_day = dt.day;
 	}
@@ -302,10 +304,11 @@ function WriteLog(message) {
 		Write(log_message);
 		Close();
 	}
-	if (/^!/.test(message)) { // Если сообщение начинается с восклицательного знака, то выводим MsgBox
-		// WshShell.Popup(message, 5, "SVK Transport ERROR", 48);
-		if (INI.Account.messages_recipient){ // получатель сообщения о ошибке скрипта
-			WshShell.Run('net send ' + INI.Account.messages_recipient + ' ' + message, 6, false);
+	// Если сообщение начинается с восклицательного знака, то посылаем net send администраторам
+	if ((/^\s*!/.test(message)) && (INI.Account.messages_recipient)) {
+		var recipients = INI.Account.messages_recipient.match(/[^,;]+/g);
+		for(var i = 0, recipient; recipient = recipients[i++];) {
+			WshShell.Run('net send ' + recipient + ' ' + message, 6, false);
 		}
 	}
 }
@@ -419,13 +422,13 @@ function ShowTimers() {
 function Connect() {
 	function EventDescription() {
 		switch(num_timer_onfinish) {
-			case 0: return '> Проверка по таймауту';
-			case 1: return '> Отправка исходящих сообщений';
-			case 2: return '> Запрос ответа';
-			case 3: return '> Повтор неудавшегося подключения';
-			case 4: return '> Запуск вручную';
-			case 5: return '> Запуск по окончанию ограничения';
-			case 6: return '> Запуск при старте приложения';
+			case 0: return ' > Проверка по таймауту';
+			case 1: return ' > Отправка исходящих сообщений';
+			case 2: return ' > Запрос ответа';
+			case 3: return ' > Повтор неудавшегося подключения';
+			case 4: return ' > Запуск вручную';
+			case 5: return ' > Запуск по окончанию ограничения';
+			case 6: return ' > Запуск при старте приложения';
 		}
 	}
 	online = false;
@@ -814,7 +817,7 @@ function GetList(response) {
 					for (var i=0; i<races.length; i++) {
 						if ((races[i].filename) && online) {
 							if ((INI.Config) && (INI.Config.file_ignore) && ((new RegExp('^'+INI.Config.file_ignore.replace(/\./g,'\\.').replace(/\?/g,'.').replace(/\*/g,'.*?')+'$', "i")).test(races[i].filename))) {
-								WriteLog("!Файл " + races[i].filename + " определен как ненужный");
+								WriteLog(" !Файл " + races[i].filename + " определен как ненужный");
 								WriteLog("Удаление с сервера " + races[i].filename);
 								GetXMLdata(url_get + '?Method=Delete&InstanceID=' + races[i].id, FileDelete, races[i]);
 							} else {
@@ -829,7 +832,7 @@ function GetList(response) {
 									races[i].Stream.Open();
 									// -----------------------------------------------------
 									if (races[i].segments_count > 1) { // Загрузка файла по сегментам
-										WriteLog("> Загрузка " + races[i].filename + " (" + races[i].size + " байт. " + races[i].segments_count + " сегментов)");
+										WriteLog(" > Загрузка " + races[i].filename + " (" + races[i].size + " байт. " + races[i].segments_count + " сегментов)");
 										for (var n = 1; n <= races[i].segments_count; n++) {
 											var start = INI.Config.segment_size_download * (n-1);
 											var url_get_seg = url_get + '?Method=Download&InstanceID=' + races[i].id + '&Start=' + start + '&Count=' + INI.Config.segment_size_download;
@@ -838,13 +841,13 @@ function GetList(response) {
 										}
 									// -----------------------------------------------------
 									} else { // Загрузка файла одним куском
-										WriteLog("> Загрузка " + races[i].filename + " (" + races[i].size + " байт)");
+										WriteLog(" > Загрузка " + races[i].filename + " (" + races[i].size + " байт)");
 										races[i].segment_number = 1;
 										GetXMLdata(url_get + '?Method=Download&InstanceID=' + races[i].id, FileDownload, races[i]);
 									}
 									// -----------------------------------------------------
 								} else {
-									WriteLog("!Файл " + races[i].filename + " был загружен ранее");
+									WriteLog(" !Файл " + races[i].filename + " был загружен ранее");
 									WriteLog("Удаление с сервера " + races[i].filename);
 									GetXMLdata(url_get + '?Method=Delete&InstanceID=' + races[i].id, FileDelete, races[i]);
 								}
@@ -874,23 +877,23 @@ function Download() {
 	WshShell.RegWrite ("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\GlobalUserOffline", 0, "REG_DWORD");
 
 	if (INI.Account.web_login_info) {
-		WriteLog(' > Запрос списка платежных сообщений');
+		WriteLog('> Запрос списка платежных сообщений');
 	} else {
-		WriteLog(' > Запрос списка входящих сообщений');
+		WriteLog('> Запрос списка входящих сообщений');
 	}
 	web_login = INI.Account.web_login;
 	web_passw = INI.Account.web_passw;
 	GetXMLdata(url_get_list, GetList);
 
 	if (INI.Account.web_login_info){
-		WriteLog(' > Запрос списка информационных и сообщений из статистики');
+		WriteLog('> Запрос списка информационных и сообщений из статистики');
 		web_login = INI.Account.web_login_info;
 		web_passw = INI.Account.web_passw_info;
 		GetXMLdata(url_get_list, GetList);
 	}
 
 	if (INI.Account.web_login_test){
-		WriteLog(' > Запрос списка тестовых платежных сообщений');
+		WriteLog('> Запрос списка тестовых платежных сообщений');
 		web_login = INI.Account.web_login_test;
 		web_passw = INI.Account.web_passw_test;
 		GetXMLdata(url_get_list, GetList);
@@ -1031,7 +1034,7 @@ function Upload() {
 	web_login = INI.Account.web_login;
 	web_passw = INI.Account.web_passw;
 	if ((INI.Paths.pay_out) && (FSO.GetFolder(INI.Paths.pay_out).Files.Count > 0)) {
-		WriteLog("> Отправка платежных сообщений:");
+		// WriteLog(" > Отправка платежных сообщений:");
 		EnumerateFiles(INI.Paths.pay_out);
 	}
 
@@ -1041,7 +1044,7 @@ function Upload() {
 		web_passw = INI.Account.web_passw_info;
 	}
 	if ((INI.Paths.stat_info_out) && (FSO.GetFolder(INI.Paths.stat_info_out).Files.Count > 0)) {
-		WriteLog("> Отправка документов ПТК ПСД:");
+		// WriteLog(" > Отправка документов ПТК ПСД:");
 		EnumerateFiles(INI.Paths.stat_info_out);
 	}
 
@@ -1051,7 +1054,7 @@ function Upload() {
 		web_passw = INI.Account.web_passw_test;
 	}
 	if ((INI.Paths.pay_test_out) && (FSO.GetFolder(INI.Paths.pay_test_out).Files.Count > 0)) {
-		WriteLog("> Отправка ТЕСТОВЫХ платежных документов:");
+		// WriteLog(" > Отправка ТЕСТОВЫХ платежных документов:");
 		EnumerateFiles(INI.Paths.pay_test_out);
 	}
 }
@@ -1187,7 +1190,7 @@ function On_Load() {
 	ShowTimers();
 	CheckRestrictions();
 	StartTimer(0); // периодическая проверка
-	WriteLog('> === ' + document.title + '. Старт программы === <')
+	WriteLog(' > === ' + document.title + '. Старт программы === <')
 }
 
 // Обработка клика на чекбоксе "отключить периодическую проверку в заданные дни и часы."

@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=2.3.0
+	version=2.3.1
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -214,18 +214,20 @@ function ReadIniFile(ini_file) {
 	return oINI;
 }
 
-// Возвращает дату и время в удобоваримом виде (как объект)
+// Преобразовывает заданную дату в объект со свойствами: year, month, day, hours, min, sec
 function objDate(obj){
 	function format(x){return (x < 10) ? ('0' + x) : String(x);}
-	var datetime = {}; var d;
-	if (obj===undefined) {d=new Date();} else {d=new Date(obj);}
-	datetime.year = String(d.getYear());      // yyyy
-	datetime.month = format(d.getMonth()+1);  // mm
-	datetime.day = format(d.getDate());       // dd
-	datetime.hours = format(d.getHours());    // hh
-	datetime.min = format(d.getMinutes());    // mm
-	datetime.sec = format(d.getSeconds());    // ss
-	return datetime;
+	var d = obj ? new Date(obj) : new Date();
+	var y = String(d.getYear());
+	return {
+		year:  y,                      // yyyy
+		yy:    y.replace(/^../,''),    // yy
+		month: format(d.getMonth()+1), // mm
+		day:   format(d.getDate()),    // dd
+		hours: format(d.getHours()),   // hh
+		min:   format(d.getMinutes()), // mm
+		sec:   format(d.getSeconds())  // ss
+	};
 }
 
 // Переводит кол-во секунд во время в виде "mm:ss"
@@ -284,7 +286,7 @@ function Backup(filename, direction) {
 	XCopyFile(filename, backup_dir + "\\");
 }
 
-// Запись лога в textarea и в файл (Предупреждения выводятся в MsgBox и отправляются администратору)
+// Запись лога в textarea и в файл (Предупреждения отправляются администратору)
 function WriteLog(message) {
 	var dt = objDate();
 	var log_message = '['+dt.hours+':'+dt.min+'.'+dt.sec+'] ' + message + '\r\n';
@@ -656,7 +658,7 @@ function SortingFiles(filename, format) {
 				case INI.Account.from_addr: // Адрес отправителя файлов статистической отчетности
 					WriteLog("это квитанция о получении информационного сообщения " + receipt_info);
 					if (INI.Paths.stat_info_kvit) {
-						XCopyFile(filename, INI.Paths.stat_info_kvit + '\\', true); // в каталог квитанций на тестовые платежные сообщения
+						XCopyFile(filename, INI.Paths.stat_info_kvit + '\\', true); // в каталог квитанций на информационные и сообщения из статистики
 					}else{
 						WriteLog("!Каталог квитанций на сообщения в статистику НЕ ЗАДАН");
 					}

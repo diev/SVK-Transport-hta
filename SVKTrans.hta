@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=2.3.1
+	version=2.4.0
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -38,6 +38,7 @@ var timeout = [];                       // массив для хранения 
 var num_timer_onfinish;                 // номер таймера, вызвавшего срабатывание
 var current_day = new Date().getDate(); // текущий день (используется для очистки окна лога)
 var online = false;                     // состояние соединения
+var StatInfoInFilters = [];             // массив с каталогами назначения и соответствующими им масками файлов для сортировки входящих информационных сообщений
 
 // Объекты ActiveX
 var WshShell;
@@ -60,6 +61,7 @@ var url_post = 'http://' + INI.Account.svk_host + '/KbrReceive/';
 var web_login;
 var web_passw;
 
+LoadStatInfoInFilters();
 MakeAllDir();
 
 var objSocket;
@@ -253,7 +255,7 @@ function CreateFolder(path) {
 function MakeAllDir() {
 	CreateFolder(store_path);
 	for (var i in INI.Paths){
-		var path = INI.Paths[i];
+		var path = (/^stat_info_in_filter\d$/.test(i)) ? INI.Paths[i].replace(/(.+)\\.+/, '$1') : INI.Paths[i];
 		if ((path) && (!FSO.FolderExists(path))) {
 			if (WshShell.Popup("Заданный Вами в SVKTrans.ini каталог\n"+path+"\nне существует!\n\nСоздать его?", 0, "Предупреждение", 36) == 6){
 				CreateFolder(path);
@@ -590,6 +592,40 @@ function FileDelete(response, race) {
 }
 
 // ------------------------------------------------
+// Загрузка фильтров для сортировки входящих информационных сообщений
+function LoadStatInfoInFilters() {
+	for (var i = 0; i < 10; i++) {
+		var value = INI.Paths['stat_info_in_filter' + i];
+		if (value) {
+			var params = /(.+\\)(.+)/.exec(value);
+			if (params) {
+				var masks = params[2].split('|');
+				for (var j = 0; j < masks.length; j++) {
+					masks[j] = new RegExp('^' + masks[j].replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/\?/g, '.') + '$', 'i');
+				}
+				StatInfoInFilters[StatInfoInFilters.length] = {
+					path: params[1],
+					re: masks
+				}
+			}
+		}
+	}
+}
+
+// ------------------------------------------------
+// Возвращает каталог назначения для входящего информационного сообщения
+function GetStatInfoDest(filename){
+	for (var i = 0; i < StatInfoInFilters.length; i++) {
+		for (var j = 0; j < StatInfoInFilters[i].re.length; j++) {
+			if (StatInfoInFilters[i].re[j].test(filename)) {
+				return StatInfoInFilters[i].path;
+			}
+		}
+	}
+	return INI.Paths.stat_info_in + '\\';
+}
+
+// ------------------------------------------------
 // Сортировка принятых файлов по каталогам назначения в зависимости от формата сообщения
 function SortingFiles(filename, format) {
 	if (isContainArray(["XMLEPD","XMLESID","RECEIPT"], format)) {
@@ -670,7 +706,8 @@ function SortingFiles(filename, format) {
 		case "INFO":
 			WriteLog("это документ ПТК ПСД");
 			if (INI.Paths.stat_info_in) {
-				XCopyFile(filename, INI.Paths.stat_info_in + '\\', true); // в каталог входящих информационных и сообщений из статистики
+				var stat_info_in_dest = GetStatInfoDest(FSO.GetFileName(filename));
+				XCopyFile(filename, stat_info_in_dest + '\\', true); // в каталоги входящих информационных и сообщений из статистики
 			} else {
 				WriteLog("!Каталог входящих информационных и сообщений из статистики НЕ ЗАДАН");
 			}

@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=2.4.1
+	version=2.5.0
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -657,6 +657,16 @@ function SortingFiles(filename, format) {
 				return;
 			}
 
+			if (isContainArray(Recipients, INI.Account.UEO_uic_work_inkass)){ // Логический адрес АРМ КБР (для инкассовых поручений)
+				WriteLog("это " + format + " инкассовый документ для АРМ КБР");
+				if (INI.Paths.pay_in){
+					XCopyFile(filename, INI.Paths.pay_in + '\\', true); // в каталог входящих платежных сообщений
+				}else{
+					WriteLog("!Каталог входящих платежных сообщений НЕ ЗАДАН");
+				}
+				return;
+			}
+
 			if (isContainArray(Recipients, INI.Account.UEO_uic_test)){ // Логический тестовый адрес АРМ КБР
 				WriteLog("это ТЕСТОВЫЙ " + format + " документ АРМ КБР");
 				if (INI.Paths.pay_test_in) {
@@ -676,7 +686,8 @@ function SortingFiles(filename, format) {
 			receipt_info = fname ? fname[1] : ': "'+receipt_info+'"';
 
 			switch(xmlDoc.getElementsByTagName("props:MessageInfo")[0].getElementsByTagName("props:To")[0].childNodes[0].text){
-				case INI.Account.UEO_uic_work: // Логический адрес АРМ КБР
+				case INI.Account.UEO_uic_work:        // Логический адрес АРМ КБР
+				case INI.Account.UEO_uic_work_inkass: // Логический адрес АРМ КБР (для инкассовых поручений)
 					WriteLog("это квитанция о получении платежного документа " + receipt_info);
 					if (INI.Paths.pay_kvit) {
 						XCopyFile(filename, INI.Paths.pay_kvit + '\\', true); // в каталог квитанций на платежные сообщения

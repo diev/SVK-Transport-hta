@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=2.7.0
+	version=2.8.0
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -70,9 +70,32 @@ var objXBuffer;
 InitSocket();
 InitXBuffer();
 
+var myPID = GetMyPID();  // ProcessId нашего приложения
 //=====================================================
 //  C O M M O N
 //=====================================================
+
+// Возвращает ProcessId нашего приложения
+function GetMyPID(){
+	var pid = new ActiveXObject('WScript.Shell').Exec('rundll32 kernel32,Sleep').ProcessID;
+	var oProc = new Enumerator(GetObject('winmgmts:\\\\.\\root\\cimv2').ExecQuery('select * from Win32_Process where ProcessId='+pid)).item();
+	var parent_id = oProc.ParentProcessId;
+	oProc.Terminate();
+	return parent_id;
+}
+
+// Перезапуск приложения
+function Restart(){
+	var rst_file = WshShell.ExpandEnvironmentStrings('%TEMP%\\svktr_restart.cmd');
+	var this_script = unescape(document.URL).replace(/^file:\/\//, '');
+	var rst_text = '@echo off\nCHCP 1251>nul\n';
+	rst_text += 'ping -n 3 -w 1000 127.0.0.1 > nul\n';
+	rst_text += 'taskkill /f /pid ' + myPID + '\n';
+	rst_text += 'ping -n 2 -w 1000 127.0.0.1 > nul\n';
+	rst_text += 'start "" "' + this_script + '"';
+	WriteTextFile(rst_file, rst_text);
+	WshShell.Run(rst_file, 0, true);
+}
 
 // Отлов необрабатываемых ошибок
 function catchError(err_text, err_src, err_line){
@@ -1042,6 +1065,9 @@ function UploadFile(file, out_dir, data, segment_number, segments_count, guid) {
 							break;
 					}
 					break;
+				case 400:
+					Restart();
+					return;
 				case 412:
 					WriteLog('Файл ' + filename + ' уже был отправлен ранее. Удаляем его.');
 					break;

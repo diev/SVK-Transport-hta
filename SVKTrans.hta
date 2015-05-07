@@ -12,7 +12,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=2.6.0
+	version=2.7.0
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -555,9 +555,12 @@ function CheckRestrictions(){
 //  D O W N L O A D
 //=====================================================
 
-// Запрос на загрузку данных с заданного URL
+// Запрос на загрузку данных с заданного URL (последовательность для IE: open, setRequestHeader, onreadystatechange, send)
 // Входные параметры: (url; функция, которая будет вызвана по окончании запроса; параметр этой функции)
 function GetXMLdata(url, func, param) {
+	httpRequest.open('GET', url, false, web_login, web_passw);
+	httpRequest.setRequestHeader("User-Agent", app_name + ' ' + SVKTrans.version);
+	httpRequest.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2000 00:00:00 GMT");
 	httpRequest.onreadystatechange = function() {
 		if (httpRequest.readyState == 4) {
 			if (httpRequest.status == 401) {
@@ -567,9 +570,6 @@ function GetXMLdata(url, func, param) {
 			}
 		}
 	};
-	httpRequest.open('GET', url, false, web_login, web_passw);
-	httpRequest.setRequestHeader("User-Agent", app_name + ' ' + SVKTrans.version);
-	httpRequest.setRequestHeader("If-Modified-Since", "Sat, 1 Jan 2000 00:00:00 GMT");
 	try {
 		httpRequest.send(null);
 	} catch(e) {
@@ -982,24 +982,8 @@ function Download() {
 //  U P L O A D
 //=====================================================
 
-// Отправка одного файла
+// Отправка одного файла (последовательность для IE: open, setRequestHeader, onreadystatechange, send)
 function UploadFile(file, out_dir, data, segment_number, segments_count, guid) {
-	httpRequest.onreadystatechange = function() {
-		if (httpRequest.readyState == 4) {
-			switch(httpRequest.status){
-				case 202:
-					break;
-				case 401:
-					WriteLog('!Ответ сервера: 401 Unauthorized');
-					break;
-				case 412:
-					WriteLog('!Ответ сервера: 412 Duplicate message');
-					break;
-				default:
-					WriteLog('!Ответ сервера: ' + httpRequest.status + ' ' + httpRequest.statusText);
-			}
-		}
-	};
 	httpRequest.open('POST', url_post, false, web_login, web_passw);
 	//------------------------------------------------
 	var filename = file.Name;
@@ -1042,36 +1026,46 @@ function UploadFile(file, out_dir, data, segment_number, segments_count, guid) {
 		httpRequest.setRequestHeader('Segmentation-Count', segments_count);
 	}
 
-	try {
-		httpRequest.send(data);
-		switch(httpRequest.status){
-			case 202:
-				if (segment_number) {
-					if (httpRequest.statusText == 'Segment accepted') {
-						WriteLog(segment_number + '-й сегмент успешно отправлен');
-						if (segment_number != segments_count) return;
-						break;
+	// Обработка ответа сервера
+	httpRequest.onreadystatechange = function() {
+		if (httpRequest.readyState == 4) {
+			WriteLog('Ответ сервера: ' + httpRequest.status + ' ' + httpRequest.statusText);
+			switch(httpRequest.status){
+				case 202:
+					switch(httpRequest.statusText){
+						case 'Segment accepted':
+							WriteLog(segment_number + '-й сегмент файла ' + filename + ' успешно отправлен');
+							UploadFile(file, out_dir, data, segment_number+1, segments_count, guid);
+							return;
+						case 'Message accepted':
+							WriteLog('файл ' + filename + ' успешно отправлен целиком');
+							break;
 					}
-				} else {
-					WriteLog('файл ' + filename + ' успешно отправлен');
 					break;
-				}
-			case 412:
-				if (segment_number) {
-					WriteLog('Последний сегмент файла ' + filename + ' успешно отправлен.');
-				} else {
-					WriteLog('Удаляем файл ' + filename + ' .Он уже был отправлен.');
-				}
-				break;
-			default: // другой ответ сервера (считаем что файл не отправлен)
-				StartTimer(0); // периодическая проверка
-				return;
+				case 412:
+					WriteLog('Файл ' + filename + ' уже был отправлен ранее. Удаляем его.');
+					break;
+				default: // другой ответ сервера (считаем что файл не отправлен)
+					StartTimer(0); // периодическая проверка
+					return;
+			}
+
+			if (INI.Paths.backup) Backup(filepath, "OUT");
+			FSO.DeleteFile(filepath, true);
+			StartTimer(2); // запрос ответа на отправленное сообщение
+			StartTimer(0); // периодическая проверка
+			StartTimer(1); // проверка наличия исходящих сообщений
+
 		}
-		if (INI.Paths.backup) Backup(filepath, "OUT");
-		FSO.DeleteFile(filepath, true);
-		StartTimer(2); // запрос ответа на отправленное сообщение
-		StartTimer(0); // периодическая проверка
-		StartTimer(1); // проверка наличия исходящих сообщений
+	};
+
+	// теперь - сам запрос
+	try {
+		if (segment_number) {
+			httpRequest.send(data[segment_number-1]);
+		} else {
+			httpRequest.send(data[0]);
+		}
 	} catch(err) {
 		WriteLog("!Ошибка при открытии " + url_post);
 		online = false;
@@ -1093,12 +1087,10 @@ function Upload() {
 					if (segments_count > 1) { // Отправка файла сегментами
 						WriteLog(' > Отправка файла ' + file.Name + ' (' + file.Size + ' байт. ' + segments_count + ' сегментов)');
 						var guid = GUID();
-						for (var i=0; i<segments_count; i++) {
-							UploadFile(file, dir, file_data[i], i+1, segments_count, guid);
-						}
+						UploadFile(file, dir, file_data, 1, segments_count, guid);
 					} else { // Отправка файла одним куском
 						WriteLog(' > Отправка файла ' + file.Name + ' (' + file.Size + ' байт)');
-						UploadFile(file, dir, file_data[0]);
+						UploadFile(file, dir, file_data);
 					}
 				}
 			}

@@ -1,4 +1,5 @@
 <html>
+<!-- // Начиная с версии 2.9, разработку ведет Дмитрий Евдокимов, diev at mail.ru -->
 <head>
 <meta http-equiv=content-type content="text-html; charset=utf-8">
 <meta http-equiv=MSThemeCompatible content=Yes>
@@ -12,7 +13,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=2.9.5
+	version=2.9.6
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -728,6 +729,26 @@ function SortingFiles(filename, format) {
 
 			if (isContainArray(Recipients, INI.Account.UEO_uic_ies_test)){ // Логический тестовый адрес АРМ КБР (для информационных сообщений)
 				WriteLog("это ТЕСТОВОЕ ИНФОРМАЦИОННОЕ " + format + " сообщение для АРМ КБР");
+				if (INI.Paths.pay_test_in) {
+					XCopyFile(filename, INI.Paths.pay_test_in + '\\', true); // Каталог входящих тестовых сообщений для АРМ КБР
+				}else{
+					WriteLog("!Каталог входящих тестовых сообщений для АРМ КБР НЕ ЗАДАН");
+				}
+				return;
+			}
+
+			if (isContainArray(Recipients, INI.Account.UEO_uic_51x)){ // Логический адрес АРМ КБР
+				WriteLog("это " + format + " документ для АРМ КБР");
+				if (INI.Paths.pay_in){
+					XCopyFile(filename, INI.Paths.pay_in + '\\', true); // в каталог входящих сообщений для АРМ КБР
+				}else{
+					WriteLog("!Каталог входящих сообщений для АРМ КБР НЕ ЗАДАН");
+				}
+				return;
+			}
+
+			if (isContainArray(Recipients, INI.Account.UEO_uic_51x_test)){ // Логический тестовый адрес АРМ КБР
+				WriteLog("это ТЕСТОВЫЙ " + format + " документ АРМ КБР");
 				if (INI.Paths.pay_test_in) {
 					XCopyFile(filename, INI.Paths.pay_test_in + '\\', true); // Каталог входящих тестовых сообщений для АРМ КБР
 				}else{

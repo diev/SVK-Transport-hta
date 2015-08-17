@@ -13,7 +13,7 @@
 	selection=no
 	contextMenu=no
 	singleinstance=yes
-	version=2.9.6
+	version=2.9.7
 	author=mozers™
 	email=mozers@mail.ru
 	icq=256106175
@@ -1216,9 +1216,18 @@ function Upload(queue) {
 					var file_data = ReadFileSegments(file.Path);
 					var segments_count = file_data.length;
 					if (segments_count > 1) { // Отправка файла сегментами
-						WriteLog(' > Отправка файла ' + file.Name + ' (' + file.Size + ' байт. ' + segments_count + ' сегментов)');
 						var guid = GUID();
-						UploadFile(file, dir, file_data, 1, segments_count, guid);
+						var segments_start = 1;
+						WriteLog(' > Отправка файла ' + file.Name + ' (' + file.Size + ' байт. ' + segments_count + ' сегментов ' + guid + ')');
+						//#2.9.7:
+						// Если отправка какого-нибудь большого файла срывается, используйте докачку:
+						// заполните переменные ниже своими значениями и временно снимите комментарий
+						// со следующего условного блока
+//						if (file.Name == 'ez601702.030') { // имя проблемного файла
+//							guid = 'bdf7e176-5ea6-80fe-bb44-7a852af8252f'; // взять из лога
+//							segments_start = 261; // следующий номер сегмента, после того, на котором зависло
+//						}
+						UploadFile(file, dir, file_data, segments_start, segments_count, guid);
 					} else { // Отправка файла одним куском
 						WriteLog(' > Отправка файла ' + file.Name + ' (' + file.Size + ' байт)');
 						UploadFile(file, dir, file_data);

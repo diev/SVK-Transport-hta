@@ -13,7 +13,7 @@
 	selection="no"
 	contextMenu="no"
 	singleinstance="yes"
-	version="2.9.8"
+	version="2.9.9"
 	author="mozers™"
 	email="mozers@mail.ru"
 	icq="256106175"
@@ -1049,12 +1049,10 @@ function Download(queue) {
 		case 1:
                 	if (INI.Account.web_login_info) {
                 		WriteLog('> Запрос списка платежных сообщений');
-                	} else {
-                		WriteLog('> Запрос списка входящих сообщений');
-                	}
-                	web_login = INI.Account.web_login;
-                	web_passw = INI.Account.web_passw;
-                	GetXMLdata(url_get_list, GetList);
+	                	web_login = INI.Account.web_login;
+        	        	web_passw = INI.Account.web_passw;
+                		GetXMLdata(url_get_list, GetList);
+			}
                 	break;
 
                 case 2:
@@ -1299,11 +1297,18 @@ function ActiveX_Init() {
 	var msxml_alert = "Продолжение работы невозможно!\nУстановите MSXML 4.0 или более поздней версии.";
 
 	function XMLHTTP_Init() {
-		var progID = ['Msxml2.XMLHTTP.6.0', 'Msxml2.XMLHTTP.5.0', 'Msxml2.XMLHTTP.4.0', 'Microsoft.XMLHTTP'];
+		var progID = ['Msxml2.ServerXMLHTTP.6.0', 'Msxml2.XMLHTTP.6.0', 'Msxml2.XMLHTTP.5.0', 'Msxml2.XMLHTTP.4.0', 'Microsoft.XMLHTTP'];
 		for (var i = 0; i < progID.length; i++) {
 			try {
 				httpRequest = new ActiveXObject(progID[i]);
-				if (i > 2) alert("Отправка файлов статотчетности работать не будет!\nУстановите более позднюю версию MSXML.");
+				if (i > 3) alert("Отправка файлов статотчетности работать не будет!\nУстановите более позднюю версию MSXML.");
+				if (i < 1) {
+					var Timeout_Resolve = 50*1000;
+					var Timeout_Connect = 50*1000;
+					var Timeout_Send = 150*1000;
+					var Timeout_Receive = 150*1000;
+					httpRequest.setTimeouts(Timeout_Resolve, Timeout_Connect, Timeout_Send, Timeout_Receive);
+				}
 				return httpRequest;
 			}
 			catch (e) {}

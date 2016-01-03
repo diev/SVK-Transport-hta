@@ -13,7 +13,7 @@
 	selection="no"
 	contextMenu="no"
 	singleinstance="yes"
-	version="2.9.9"
+	version="2.9.10"
 	author="mozers™"
 	email="mozers@mail.ru"
 	icq="256106175"
@@ -1047,7 +1047,7 @@ function Download(queue) {
 
 	switch(queue) {
 		case 1:
-                	if (INI.Account.web_login_info) {
+                	if (INI.Account.web_login) {
                 		WriteLog('> Запрос списка платежных сообщений');
 	                	web_login = INI.Account.web_login;
         	        	web_passw = INI.Account.web_passw;

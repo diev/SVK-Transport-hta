@@ -13,10 +13,11 @@
 	selection="no"
 	contextMenu="no"
 	singleinstance="yes"
-	version="2.9.10"
+	version="2.9.11"
 	author="mozers™"
 	email="mozers@mail.ru"
 	icq="256106175"
+	coauthor="Dmitrii Evdokimov, diev@mail.ru"
  />
 <style type="text/css">
 	body, table  {font-family:MS Sans Serif; font-size:8pt; background-color:threedface; overflow:hidden;}
@@ -517,27 +518,34 @@ function Connect() {
 
 // Проверка наличия исходящих сообщений
 function CheckOutbox() {
-	if (INI.Paths.pay_out) {
-		if (FSO.GetFolder(INI.Paths.pay_out).Files.Count > 0) return true;
-	}
-	if (INI.Paths.pay_test_out) {
-		if (FSO.GetFolder(INI.Paths.pay_test_out).Files.Count > 0) return true;
-	}
-	if (INI.Paths.stat_info_out) {
-		if (FSO.GetFolder(INI.Paths.stat_info_out).Files.Count > 0) return true;
-	}
-	if (INI.Paths.expl_info_out) {
-		if (FSO.GetFolder(INI.Paths.expl_info_out).Files.Count > 0) return true;
-	}
-	if (INI.Paths.lic_info_out) {
-		if (FSO.GetFolder(INI.Paths.lic_info_out).Files.Count > 0) return true;
-	}
-	if (INI.Paths.otzi_info_out) {
-		if (FSO.GetFolder(INI.Paths.otzi_info_out).Files.Count > 0) return true;
-	}
-	if (INI.Paths.upsir_info_out) {
-		if (FSO.GetFolder(INI.Paths.upsir_info_out).Files.Count > 0) return true;
-	}
+	if ((INI.Paths.pay_out)
+		&& (FSO.FolderExists(INI.Paths.pay_out))
+		&& (FSO.GetFolder(INI.Paths.pay_out).Files.Count > 0))
+			return true;
+	if ((INI.Paths.pay_test_out)
+		&& (FSO.FolderExists(INI.Paths.pay_test_out))
+		&& (FSO.GetFolder(INI.Paths.pay_test_out).Files.Count > 0))
+			return true;
+	if ((INI.Paths.stat_info_out)
+		&& (FSO.FolderExists(INI.Paths.stat_info_out))
+		&& (FSO.GetFolder(INI.Paths.stat_info_out).Files.Count > 0))
+			return true;
+	if ((INI.Paths.expl_info_out)
+		&& (FSO.FolderExists(INI.Paths.expl_info_out))
+		&& (FSO.GetFolder(INI.Paths.expl_info_out).Files.Count > 0))
+			return true;
+	if ((INI.Paths.lic_info_out)
+		&& (FSO.FolderExists(INI.Paths.lic_info_out))
+		&& (FSO.GetFolder(INI.Paths.lic_info_out).Files.Count > 0))
+			return true;
+	if ((INI.Paths.otzi_info_out)
+		&& (FSO.FolderExists(INI.Paths.otzi_info_out))
+		&& (FSO.GetFolder(INI.Paths.otzi_info_out).Files.Count > 0))
+			return true;
+	if ((INI.Paths.upsir_info_out)
+		&& (FSO.FolderExists(INI.Paths.upsir_info_out))
+		&& (FSO.GetFolder(INI.Paths.upsir_info_out).Files.Count > 0))
+			return true;
 	return false;
 }
 

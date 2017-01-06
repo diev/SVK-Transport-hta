@@ -1,4 +1,5 @@
 # ![svktrans.png](images/svktrans.png) SVK Transport
+[![Build status](https://ci.appveyor.com/api/projects/status/1mvedcg27p6n7aj0?svg=true)](https://ci.appveyor.com/project/diev/svk-transport-hta)
 
 Прием и отправка платежной XML информации, бинарных информационных и файлов 
 статистики по HTTP протоколу в систему СВК Банка России.  

@@ -1,4 +1,5 @@
-# ![svktrans.png](docs/images/svktrans.png) SVK Transport
+# ![svktrans.png](docs/images/svktrans.png) [SVK Transport](http://diev.github.io/SVK-Transport-hta)
+
 [![Build status](https://ci.appveyor.com/api/projects/status/1mvedcg27p6n7aj0?svg=true)](https://ci.appveyor.com/project/diev/svk-transport-hta)
 
 Прием и отправка платежной XML информации, бинарных информационных и файлов 
@@ -12,10 +13,11 @@
 Файловый адаптер СВК и др.) выглядит крошечной и шустрой утилитой, 
 тем не менее обладающей достаточно развитым функционалом.
 
-Подробнее смотрите на [сайте](http://diev.github.io/SVK-Transport-hta).  
-Смотрите также проект 
+Смотрите также проекты 
 [PTK-PSD Browser](http://diev.github.io/PTK-PSD-Browser-hta) для просмотра 
-информационных посылок ПТК ПСД Банка России.
+информационных посылок ПТК ПСД Банка России и
+[UFEBS Viewer](http://diev.github.io/UFEBS-Viewer-hta) для просмотра файлов 
+УФЭБС.
 
 ## Основные возможности программы
 
@@ -56,21 +58,21 @@ DLL может выдать ошибку с кодом 0x80004005. Это сра
       regsvr32 xbuffer.dll
 ```
 
+## Дополнительная информация на сайте Банка России
+
+* [Информация о новых версиях программного 
+обеспечения](http://www.cbr.ru/mcirabis/?PrtId=itest) (СВК, УТА).
+
 ## История версий
 
-Программа импортирована на GitHub с версии 2.9.11 с ее страницы на 
+Проект импортирован на GitHub с версии 2.9.11 с его страницы на 
 [Bitbucket](https://bitbucket.org/html-applications/svk-transport).  
 О более старой истории первоначального автора **mozers** есть в прилагаемом 
 [файле](docs/changelog.md).
 
-## Дополнительная информация на сайте Банка России
-
-* [Информация о новых версиях программного обеспечения](http://www.cbr.ru/mcirabis/?PrtId=itest) 
-(СВК, УТА).
-
 ## Лицензионное соглашение
 
-Приложение распространяется по лицензии [Apache 2.0](LICENSE).  
+Licensed under the [Apache License, Version 2.0](LICENSE).  
 (Вы можете использовать его совершенно свободно без всяких ограничений.)
 
 Данные для обратной связи находятся в коде заголовка HTA приложения.

@@ -66,6 +66,18 @@ DLL может выдать ошибку с кодом 0x80004005. Это сра
 О более старой истории первоначального автора **mozers** есть в прилагаемом 
 [файле](changelog.md).
 
+## 3rd party software
+
+Проект использует два свободнораспространяемых (Free) ActiveX контрола:
+* w3Sockets from **Dimac** (socket.dll) - с октября 2016 сайт больше не 
+доступен;
+* [Buffer](http://www.xstandard.com/en/documentation/xbuffer/) 
+from **XStandart** (xbuffer.dll) - на сайте есть инструкции по установке 
+и использованию..
+
+Больше об этом можно прочитать в 
+[wiki](https://github.com/diev/SVK-Transport-hta/wiki).
+
 ## Лицензионное соглашение
 
 Licensed under the [Apache License, 

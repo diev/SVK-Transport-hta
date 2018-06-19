@@ -13,7 +13,7 @@
     selection="no"
     contextMenu="no"
     singleinstance="yes"
-    version="2.9.12"
+    version="2.10.0"
     author="mozers™ (retired)"
     email="mozers@mail.ru"
     icq="256106175"
@@ -756,6 +756,16 @@ function SortingFiles(filename, format) {
                 return;
             }
 
+            if (isContainArray(Recipients, INI.Account.UEO_uic_work_rr)) { // Логический адрес АРМ КБР РР
+                WriteLog('это ' + format + ' документ для АРМ КБР РР');
+                if (INI.Paths.pay_in_rr) {
+                    XCopyFile(filename, INI.Paths.pay_in_rr + '\\', true); // в каталог входящих сообщений для АРМ КБР РР
+                } else {
+                    WriteLog('!Каталог входящих сообщений для АРМ КБР РР НЕ ЗАДАН');
+                }
+                return;
+            }
+
             if (isContainArray(Recipients, INI.Account.UEO_uic_ies)) { // Логический адрес АРМ КБР (для информационных сообщений)
                 WriteLog('это ИНФОРМАЦИОННОЕ ' + format + ' сообщение для АРМ КБР');
                 if (INI.Paths.pay_in) {
@@ -772,6 +782,16 @@ function SortingFiles(filename, format) {
                     XCopyFile(filename, INI.Paths.pay_test_in + '\\', true); // Каталог входящих тестовых сообщений для АРМ КБР
                 } else {
                     WriteLog('!Каталог входящих тестовых сообщений для АРМ КБР НЕ ЗАДАН');
+                }
+                return;
+            }
+
+            if (isContainArray(Recipients, INI.Account.UEO_uic_test_rr)) { // Логический тестовый адрес АРМ КБР РР
+                WriteLog('это ТЕСТОВЫЙ ' + format + ' документ АРМ КБР РР');
+                if (INI.Paths.pay_test_in_rr) {
+                    XCopyFile(filename, INI.Paths.pay_test_in_rr + '\\', true); // Каталог входящих тестовых сообщений для АРМ КБР РР
+                } else {
+                    WriteLog('!Каталог входящих тестовых сообщений для АРМ КБР РР НЕ ЗАДАН');
                 }
                 return;
             }
@@ -823,12 +843,28 @@ function SortingFiles(filename, format) {
                         WriteLog('!Каталог квитанций на сообщения для АРМ КБР НЕ ЗАДАН');
                     }
                     break;
+                case INI.Account.UEO_uic_work_rr:        // Логический адрес АРМ КБР РР
+                    WriteLog('это квитанция о получении платежного документа РР ' + receipt_info);
+                    if (INI.Paths.pay_kvit_rr) {
+                        XCopyFile(filename, INI.Paths.pay_kvit_rr + '\\', true); // в каталог квитанций на сообщения для АРМ КБР РР
+                    } else {
+                        WriteLog('!Каталог квитанций на сообщения для АРМ КБР РР НЕ ЗАДАН');
+                    }
+                    break;
                 case INI.Account.UEO_uic_test: // Логический тестовый адрес АРМ КБР
                     WriteLog('это квитанция о получении ТЕСТОВОГО платежного документа ' + receipt_info);
                     if (INI.Paths.pay_test_kvit) {
                         XCopyFile(filename, INI.Paths.pay_test_kvit + '\\', true); // в каталог квитанций на тестовые сообщения для АРМ КБР
                     } else {
                         WriteLog('!Каталог квитанций на тестовые сообщения для АРМ КБР НЕ ЗАДАН');
+                    }
+                    break;
+                case INI.Account.UEO_uic_test: // Логический тестовый адрес АРМ КБР РР
+                    WriteLog('это квитанция о получении ТЕСТОВОГО платежного документа РР ' + receipt_info);
+                    if (INI.Paths.pay_test_kvit_rr) {
+                        XCopyFile(filename, INI.Paths.pay_test_kvit_rr + '\\', true); // в каталог квитанций на тестовые сообщения для АРМ КБР РР
+                    } else {
+                        WriteLog('!Каталог квитанций на тестовые сообщения для АРМ КБР РР НЕ ЗАДАН');
                     }
                     break;
                 case INI.Account.from_addr: // Адрес отправителя файлов статистической отчетности

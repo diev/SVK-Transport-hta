@@ -68,14 +68,14 @@ from_addr=ko702i
 UEO_uic_work=uic:403070200000
 
 ; Логический адрес АРМ КБР РР
-UEO_uic_work=uic:403070200020
+;UEO_uic_work=uic:403070200020
 
 ; Логический тестовый адрес АРМ КБР
 ;UEO_uic_test=uic:220274600011
 UEO_uic_test=uic:403070200011
 
 ; Логический тестовый адрес АРМ КБР РР
-UEO_uic_test=uic:403070200021
+;UEO_uic_test=uic:403070200021
 
 ; Логический адрес АРМ КБР (для информационных сообщений)
 ;UEO_uic_ies=uic:220274600050
@@ -99,32 +99,26 @@ UEO_uic_51x_test=uic:403070200063
 ; Каталог входящих платежных сообщений
 ;pay_in=C:\BankOfRF\Payments\Incoming\UEO
 pay_in=C:\SVK\PLAT\IN
-pay_in_rr=C:\SVK\PLATRR\IN
 
 ; Каталог исходящих платежных сообщений
 ;pay_out=C:\BankOfRF\Payments\Outcoming\UEO
 pay_out=C:\SVK\PLAT\OUT
-pay_out_rr=C:\SVK\PLATRR\OUT
 
 ; Каталог квитанций на платежные сообщения
 ;pay_kvit=C:\BankOfRF\Payments\Kvit\UEO
 pay_kvit=C:\SVK\PLAT\REP
-pay_kvit_rr=C:\SVK\PLATRR\REP
 
 ; Каталог входящих тестовых платежных сообщений
 ;pay_test_in=C:\BankOfRF\PaymentsTest\Incoming\UEO
 pay_test_in=C:\SVK\PTEST\IN
-pay_test_in_rr=C:\SVK\PTESTRR\IN
 
 ; Каталог исходящих тестовых платежных сообщений
 ;pay_test_out=C:\BankOfRF\PaymentsTest\Outcoming\UEO
 pay_test_out=C:\SVK\PTEST\OUT
-pay_test_out_rr=C:\SVK\PTESTRR\OUT
 
 ; Каталог квитанций на тестовые платежные сообщения
 ;pay_test_kvit=C:\BankOfRF\PaymentsTest\Kvit\UEO
 pay_test_kvit=C:\SVK\PTEST\REP
-pay_test_kvit_rr=C:\SVK\PTESTRR\REP
 
 ; Каталог входящих информационных и сообщений из статистики
 ;stat_info_in=C:\BankOfRF\StatInfo\Incoming
@@ -136,6 +130,7 @@ stat_info_out=C:\SVK\INFO\OUT
 expl_info_out=C:\SVK\INFO\OUT\expl
 lic_info_out=C:\SVK\INFO\OUT\lic
 otzi_info_out=C:\SVK\INFO\OUT\otzi
+ubn_info_out=C:\SVK\INFO\OUT\ubn
 upsir_info_out=C:\SVK\INFO\OUT\upsir
 
 ; Каталог квитанций на сообщения в статистику

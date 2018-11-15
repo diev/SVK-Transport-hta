@@ -13,7 +13,7 @@
     selection="no"
     contextMenu="no"
     singleinstance="yes"
-    version="2.10.1"
+    version="2.10.2"
     author="mozers™ (retired)"
     email="mozers@mail.ru"
     icq="256106175"
@@ -1234,7 +1234,7 @@ function UploadFile(file, out_dir, data, segment_number, segments_count, guid) {
                 case 202:
                     switch(httpRequest.statusText) {
                         case 'Segment accepted':
-                            WriteLog(segment_number + '-й сегмент файла ' + filename + ' успешно отправлен');
+                            WriteLog(segment_number + '-й сегмент из ' + segments_count + ' файла ' + filename + ' успешно отправлен');
                             // Превентивный реконнект авторизации при длительных отдачах
                             if ((segment_number % 100) === 0) {
                                 if (INI.Account.telnet_host) {

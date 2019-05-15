@@ -147,7 +147,7 @@ Version 2.0](http://www.apache.org/licenses/LICENSE-2.0 "LICENSE").
 
 [TSH Transport]: /TSH-Transport
 [SVK Transport]: /SVK-Transport-hta
-[ПТК ПСД - Обозреватель отчетности]: /PTK-PSD-Browser-hta
+[PTK-PSD Browser]: /PTK-PSD-Browser-hta
 [UFEBS Viewer]: /UFEBS-Viewer-hta
 
 [appveyor]: https://ci.appveyor.com/project/diev/svk-transport-hta

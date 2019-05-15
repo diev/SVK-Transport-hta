@@ -148,7 +148,7 @@ Licensed under the [Apache License, Version 2.0].
 
 [TSH Transport]: http://diev.github.io/TSH-Transport
 [SVK Transport]: http://diev.github.io/SVK-Transport-hta
-[ПТК ПСД - Обозреватель отчетности]: http://diev.github.io/PTK-PSD-Browser-hta
+[PTK-PSD Browser]: http://diev.github.io/PTK-PSD-Browser-hta
 [UFEBS Viewer]: http://diev.github.io/UFEBS-Viewer-hta
 
 [appveyor]: https://ci.appveyor.com/project/diev/svk-transport-hta

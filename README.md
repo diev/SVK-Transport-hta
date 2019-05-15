@@ -1,12 +1,23 @@
-# ![svktrans.png](docs/images/svktrans.png) [SVK Transport](http://diev.github.io/SVK-Transport-hta)
+# ![icon] [SVK Transport]
 
-[![Build status](https://ci.appveyor.com/api/projects/status/1mvedcg27p6n7aj0?svg=true)](https://ci.appveyor.com/project/diev/svk-transport-hta)
-[![GitHub Release](https://img.shields.io/github/release/diev/SVK-Transport-hta.svg)](https://github.com/diev/SVK-Transport-hta/releases/latest)
+[![Build status]][appveyor]
+[![GitHub Release]][releases]
 
 Прием и отправка платежной XML информации, бинарных информационных и файлов 
 статистики по HTTP протоколу в систему СВК Банка России.  
 
-![Рабочее окно приложения](docs/images/screen.png)
+![Рабочее окно приложения]
+
+* [Важные изменения, влияющее на совместимость]
+* [Основные возможности программы]
+* [Замечания к использованию]
+* [Дополнительная информация на сайте Банка России]
+* [История версий]
+* [Идеи и пожелания, ошибки]
+* [3rd party software]
+* [Лицензионное соглашение]
+
+-----
 
 Данное HTA-приложение осуществляет прием и отправку платежной XML информации, 
 бинарных информационных и файлов статистики по HTTP протоколу.  
@@ -14,11 +25,15 @@
 Файловый адаптер СВК и др.) выглядит крошечной и шустрой утилитой, 
 тем не менее обладающей достаточно развитым функционалом.
 
+*Примечание:  
+С момента запуска Единого централизованного платежного шлюза (транспортный
+шлюз - ТШ, ТШ КБР) функции платежного обмена с Банком России отделились.*
+
 Смотрите также проекты:
-* [PTK-PSD Browser](http://diev.github.io/PTK-PSD-Browser-hta) - 
-для просмотра информационных посылок ПТК ПСД Банка России и
-* [UFEBS Viewer](http://diev.github.io/UFEBS-Viewer-hta) - 
-для просмотра файлов УФЭБС.
+
+* [TSH Transport] - отдельный транспортный агент для работы с ТШ Банка России;
+* [PTK-PSD Browser] - для просмотра информационных посылок ПТК ПСД Банка России;
+* [UFEBS Viewer] - для просмотра файлов УФЭБС.
 
 ## Важные изменения, влияющее на совместимость
 
@@ -41,16 +56,14 @@ web-аутентификацией.
 
 ## Замечания к использованию
 
-* Распаковать дистрибутивный `zip` из 
-[Releases](https://github.com/diev/SVK-Transport/releases) в отдельную папку.
+* Распаковать дистрибутивный `zip` из [Releases] в отдельную папку.
 * Программа из соображений защиты IE работает только с локального диска!
 * До первого запуска программы внимательно изучите и отредактируйте исходный 
 `SVKTrans.ini` или возьмите за основу `SVKTrans.ini.702` для Северо-Западного 
 ГУ ЦБ.
 * Для отправки информационных сообщений требуется MSXML версии 4.0 или выше. 
 Программа при старте проверяет его наличие, выдавая предупреждение при его 
-отсутствии. Загрузить MSXML 6.1 можно с сайта 
-[Microsoft](http://www.microsoft.com/downloads/details.aspx?FamilyID=d21c292c-368b-4ce1-9dab-3e9827b70604&displayLang=ru).
+отсутствии. Загрузить MSXML 6.1 можно с сайта [Microsoft].
 * Запускать следует `SVKTrans.hta`, снимать зависший - `mshta.exe` 
 (В Windows 10 - *Microsoft(R) HTML приложение (32 бита)*).
 * В Windows 7+ (проверено и в Windows 10) встроенная регистрация прилагаемых 
@@ -59,54 +72,94 @@ DLL может выдать ошибку с кодом 0x80004005. Это сра
 мыши кликнуть на "Командная строка" -> "Запуск от имени администратора" 
 (runas в этом не поможет!) и проделать регистрацию вручную:
 
-```
       cd \SVKTrans
       regsvr32 socket.dll
       regsvr32 xbuffer.dll
-```
 
 ## Дополнительная информация на сайте Банка России
 
-* [Информация о новых версиях программного 
-обеспечения](http://www.cbr.ru/mcirabis/?PrtId=itest) (СВК, УТА).
+* [Информация о новых версиях программного обеспечения].
 
 ## История версий
 
-Проект импортирован на GitHub с версии 2.9.11 с его страницы на 
-[Bitbucket](https://bitbucket.org/html-applications/svk-transport).
+Проект импортирован на GitHub с версии 2.9.11 с его страницы на [Bitbucket].
 
-Нумерация версий ведется по принципам 
-[семантического версионирования](http://semver.org/lang/ru/) со следующими 
-особенностями (для примера - пусть будет версия *2.9.11*):
-* Старшая цифра (*2*) меняется, когда сильно 
+Нумерация версий ведется по принципам [семантического версионирования]
+со следующими особенностями (для примера - пусть будет версия *1.2.3*):
+
+* Старшая цифра (*1*) меняется, когда сильно 
 меняется внешний вид (требуется новое обучение пользователей) или внутренний 
 функционал программы (требуется обратить внимание администраторов и сделать 
 вдумчивые перенастройки);
-* Средняя цифра (*9*) - когда что-то добавляется во внешний вид 
+* Средняя цифра (*2*) - когда что-то добавляется во внешний вид 
 (требуется обратить внимание пользователей - добавлена какая-то их хотелка) 
 или добавлен параметр в файл настройки, поведение которого по умолчанию 
 ничего для администраторов не меняет;
-* Младшая цифра (*11*) - когда в программе сделаны какие-то незначительные 
+* Младшая цифра (*3*) - когда в программе сделаны какие-то незначительные 
 изменения в коде или исправлены ошибки.
 
 О более старой истории первоначального автора **mozers** есть в прилагаемом 
-[файле](docs/changelog.md).
+[файле].
+
+## Идеи и пожелания, ошибки
+
+Данные для обратной связи находятся в коде заголовка HTA-приложения.  
+(Всякие хотелки принимаются и по возможности претворяются.)
+
+Есть некоторые [Идеи] развития проекта.
+Свои пожелания и сообщения об ошибках лучше размещать в [Issues].
 
 ## 3rd party software
 
 Проект использует два свободнораспространяемых (Free) ActiveX контрола:
+
 * w3Sockets from **Dimac** (socket.dll) - с октября 2016 сайт больше не 
 доступен;
-* [Buffer](http://www.xstandard.com/en/documentation/xbuffer/) 
-from **XStandart** (xbuffer.dll) - на сайте есть инструкции по установке 
-и использованию.
+* [Buffer] from **XStandart** (xbuffer.dll) - на сайте есть инструкции 
+по установке и использованию.
 
-Больше об этом можно прочитать в 
-[wiki](https://github.com/diev/SVK-Transport-hta/wiki).
+Больше об этом можно прочитать в [Wiki].
 
 ## Лицензионное соглашение
 
-Licensed under the [Apache License, Version 2.0](LICENSE).  
+Licensed under the [Apache License, Version 2.0].  
 (Вы можете использовать его совершенно свободно без всяких ограничений.)
 
-Данные для обратной связи находятся в коде заголовка HTA приложения.
+[Важные изменения, влияющее на совместимость]: #важные-изменения-влияющее-на-совместимость
+[Основные возможности программы]: #основные-возможности-программы
+[Замечания к использованию]: #замечания-к-использованию
+[Дополнительная информация на сайте Банка России]: #дополнительная-информация-на-сайте-банка-россии
+[История версий]: #история-версий
+[Идеи и пожелания, ошибки]: #идеи-и-пожелания-ошибки
+[3rd party software]: #3rd-party-software
+[Лицензионное соглашение]: #лицензионное-соглашение
+
+[Wiki]: https://github.com/diev/SVK-Transport-hta/wiki
+[Идеи]: https://github.com/diev/SVK-Transport-hta/projects/1
+[Issues]: https://github.com/diev/SVK-Transport-hta/issues
+[releases]: https://github.com/diev/SVK-Transport-hta/releases/latest
+
+[CHANGELOG]: CHANGELOG.md
+[Apache License, Version 2.0]: LICENSE
+
+[icon]: docs/assets/images/svktrans.png
+[Рабочее окно приложения]: docs/assets/images/screen.png
+[файле]: docs/changelog.md
+
+[TSH Transport]: http://diev.github.io/TSH-Transport
+[SVK Transport]: http://diev.github.io/SVK-Transport-hta
+[ПТК ПСД - Обозреватель отчетности]: http://diev.github.io/PTK-PSD-Browser-hta
+[UFEBS Viewer]: http://diev.github.io/UFEBS-Viewer-hta
+
+[appveyor]: https://ci.appveyor.com/project/diev/svk-transport-hta
+[ПТК ПСД]: http://ptkpsd.ru/
+[СВК]: http://www.cbr.ru/mcirabis/itest/
+[Bitbucket]: https://bitbucket.org/html-applications/svk-transport
+[7-Zip]: https://www.7-zip.org/
+[Microsoft]: http://www.microsoft.com/downloads/details.aspx?FamilyID=d21c292c-368b-4ce1-9dab-3e9827b70604&displayLang=ru
+[Информация о новых версиях программного обеспечения]: http://www.cbr.ru/mcirabis/?PrtId=itest (СВК, УТА)
+[семантического версионирования]: http://semver.org/lang/ru/
+[Buffer]: http://www.xstandard.com/en/documentation/xbuffer/
+
+[Build status]: https://ci.appveyor.com/api/projects/status/1mvedcg27p6n7aj0?svg=true
+[GitHub Release]: https://img.shields.io/github/release/diev/SVK-Transport-hta.svg

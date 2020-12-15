@@ -13,7 +13,7 @@
     selection="no"
     contextMenu="no"
     singleinstance="yes"
-    version="2.10.3"
+    version="2.11.0"
     author="mozers™ (retired)"
     email="mozers@mail.ru"
     icq="256106175"
@@ -341,6 +341,13 @@ function Backup(filename, direction) {
         CreateFolder(backup_dir);
     }
     XCopyFile(filename, backup_dir + '\\');
+}
+
+// Проверка наличия такого файла в бекапе IN за день
+function BackupedIN(filename) {
+    var dt = objDate();
+    var backup_dir = INI.Paths.backup + '\\IN\\' + dt.year + '\\' + dt.month + '\\' + dt.day;
+    return FSO.FileExists(backup_dir + '\\' + filename);
 }
 
 // Запись лога в textarea и в файл (Предупреждения отправляются администратору)
@@ -1049,53 +1056,59 @@ function GetList(response) {
                     WriteLog('Нет файлов для загрузки');
                 } else {
                     for (var i = 0; i < races.length; i++) {
-                        if ((races[i].filename) && online) {
+                        var filename = races[i].filename;
+                        if (filename && online) {
                             if ((INI.Config) && 
                                 (INI.Config.file_ignore) && 
-                                ((new RegExp('^'+INI.Config.file_ignore.replace(/\./g,'\\.').replace(/\?/g,'.').replace(/\*/g,'.*?')+'$', "i")).test(races[i].filename))) {
-                                WriteLog(' !Файл ' + races[i].filename + ' определен как ненужный');
-                                WriteLog('Удаление с сервера ' + races[i].filename);
+                                (new RegExp('^'+INI.Config.file_ignore.replace(/\./g,'\\.').replace(/\?/g,'.').replace(/\*/g,'.*?')+'$', "i")).test(filename)) {
+                                WriteLog(' !Файл ' + filename + ' определен как ненужный');
+                                WriteLog('Удаление с сервера ' + filename);
                                 GetXMLdata(url_get + '?Method=Delete&InstanceID=' + races[i].id, FileDelete, races[i]);
                             } else {
-                                if (!isFileDownloaded(races[i].filename)) {
-                                    races[i].segments_count = 1;
-                                    if ((INI.Config) &&
-                                        (INI.Config.segment_size_download)) {
-                                        races[i].segments_count = Math.ceil(races[i].size / INI.Config.segment_size_download);
+                                if (isFileDownloaded(filename)) {
+                                    //WriteLog(' !Файл ' + filename + ' был загружен ранее');
+                                    //WriteLog('Удаление с сервера ' + filename);
+                                    //GetXMLdata(url_get + '?Method=Delete&InstanceID=' + races[i].id, FileDelete, races[i]);
+                                    var t = 2;
+                                    while (BackupedIN(filename + '.' + t)) {
+                                        t++;
                                     }
-                                    // Открываем Stream. В него будем грузить сегменты (или содержимое файла целиком)
-                                    races[i].Stream = new ActiveXObject('ADODB.Stream');
-                                    races[i].Stream.Type = 1; //adTypeBinary
-                                    races[i].Stream.Open();
-                                    // -----------------------------------------------------
-                                    if (races[i].segments_count > 1) { // Загрузка файла по сегментам
-                                        WriteLog(' > Загрузка ' + races[i].filename + ' (' + races[i].size + ' байт. ' + races[i].segments_count + ' сегментов)');
-                                        for (var n = 1; n <= races[i].segments_count; n++) {
-                                            // Превентивный реконнект авторизации при длительных закачках
-                                            if ((n % 100) === 0) {
-                                                if (INI.Account.telnet_host) {
-                                                    TelnetConnect();
-                                                }
+                                    filename += '.' + t;
+                                    races[i].filename = filename;
+                                }
+                                //} else {
+                                races[i].segments_count = 1;
+                                if ((INI.Config) &&
+                                    (INI.Config.segment_size_download)) {
+                                    races[i].segments_count = Math.ceil(races[i].size / INI.Config.segment_size_download);
+                                }
+                                // Открываем Stream. В него будем грузить сегменты (или содержимое файла целиком)
+                                races[i].Stream = new ActiveXObject('ADODB.Stream');
+                                races[i].Stream.Type = 1; //adTypeBinary
+                                races[i].Stream.Open();
+                                // -----------------------------------------------------
+                                if (races[i].segments_count > 1) { // Загрузка файла по сегментам
+                                    WriteLog(' > Загрузка ' + filename + ' (' + races[i].size + ' байт. ' + races[i].segments_count + ' сегментов)');
+                                    for (var n = 1; n <= races[i].segments_count; n++) {
+                                        // Превентивный реконнект авторизации при длительных закачках
+                                        if ((n % 100) === 0) {
+                                            if (INI.Account.telnet_host) {
+                                                TelnetConnect();
                                             }
-                                            var start = INI.Config.segment_size_download * (n - 1);
-                                            var url_get_seg = url_get +
-                                                '?Method=Download&InstanceID=' + races[i].id +
-                                                '&Start=' + start +
-                                                '&Count=' + INI.Config.segment_size_download;
-                                            races[i].segment_number = n;
-                                            GetXMLdata(url_get_seg, FileDownload, races[i]);
                                         }
-                                    // -----------------------------------------------------
-                                    } else { // Загрузка файла одним куском
-                                        WriteLog(' > Загрузка ' + races[i].filename + ' (' + races[i].size + ' байт)');
-                                        races[i].segment_number = 1;
-                                        GetXMLdata(url_get + '?Method=Download&InstanceID=' + races[i].id, FileDownload, races[i]);
+                                        var start = INI.Config.segment_size_download * (n - 1);
+                                        var url_get_seg = url_get +
+                                            '?Method=Download&InstanceID=' + races[i].id +
+                                            '&Start=' + start +
+                                            '&Count=' + INI.Config.segment_size_download;
+                                        races[i].segment_number = n;
+                                        GetXMLdata(url_get_seg, FileDownload, races[i]);
                                     }
-                                    // -----------------------------------------------------
-                                } else {
-                                    WriteLog(' !Файл ' + races[i].filename + ' был загружен ранее');
-                                    WriteLog('Удаление с сервера ' + races[i].filename);
-                                    GetXMLdata(url_get + '?Method=Delete&InstanceID=' + races[i].id, FileDelete, races[i]);
+                                // -----------------------------------------------------
+                                } else { // Загрузка файла одним куском
+                                    WriteLog(' > Загрузка ' + filename + ' (' + races[i].size + ' байт)');
+                                    races[i].segment_number = 1;
+                                    GetXMLdata(url_get + '?Method=Download&InstanceID=' + races[i].id, FileDownload, races[i]);
                                 }
                             }
                         }

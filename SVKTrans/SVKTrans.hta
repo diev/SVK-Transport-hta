@@ -13,7 +13,7 @@
     selection="no"
     contextMenu="no"
     singleinstance="yes"
-    version="2.10.2"
+    version="2.10.3"
     author="mozers™ (retired)"
     email="mozers@mail.ru"
     icq="256106175"
@@ -574,6 +574,11 @@ function CheckOutbox() {
     if ((INI.Paths.otzi_info_out) &&
         (FSO.FolderExists(INI.Paths.otzi_info_out)) &&
         (FSO.GetFolder(INI.Paths.otzi_info_out).Files.Count > 0)) {
+            return true;
+        }
+    if ((INI.Paths.sopr_info_out) &&
+        (FSO.FolderExists(INI.Paths.sopr_info_out)) &&
+        (FSO.GetFolder(INI.Paths.sopr_info_out).Files.Count > 0)) {
             return true;
         }
     if ((INI.Paths.ubn_info_out) &&
@@ -1194,6 +1199,12 @@ function UploadFile(file, out_dir, data, segment_number, segments_count, guid) {
             httpRequest.setRequestHeader('LegacyTransport-FileName', filename64);
             httpRequest.setRequestHeader('To', 'otzi'); // Отдел по защите платежных технологий
             break;
+        case INI.Paths.sopr_info_out:
+            // Заголовки для информационных сообщений и статистики
+            httpRequest.setRequestHeader('Content-Type', 'application/info');
+            httpRequest.setRequestHeader('LegacyTransport-FileName', filename64);
+            httpRequest.setRequestHeader('To', 'sopr'); // Отдел сопровождения учетно-операционной системы 
+            break;
         case INI.Paths.ubn_info_out:
             // Заголовки для информационных сообщений и статистики
             httpRequest.setRequestHeader('Content-Type', 'application/info');
@@ -1297,14 +1308,18 @@ function Upload(queue) {
                         var guid = GUID();
                         var segments_start = 1;
                         WriteLog(' > Отправка файла ' + file.Name + ' (' + file.Size + ' байт. ' + segments_count + ' сегментов ' + guid + ')');
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         //#2.9.7:
                         // Если отправка какого-нибудь большого файла срывается, используйте докачку:
                         // заполните переменные ниже своими значениями и временно снимите комментарий
                         // со следующего условного блока
-//                        if (file.Name == 'ez601702.030') { // имя проблемного файла
-//                            guid = 'bdf7e176-5ea6-80fe-bb44-7a852af8252f'; // взять из лога
-//                            segments_start = 261; // следующий номер сегмента, после того, на котором зависло
-//                        }
+/*
+                        if (file.Name == 'ТК_КО_ezi06702.030.xml') { // имя проблемного файла
+                            guid = 'c6a94a08-153b-bfbf-76af-48a7ebe6c249'; // взять из лога
+                            segments_start = 577; // следующий номер сегмента, после того, на котором зависло
+                        }
+*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         UploadFile(file, dir, file_data, segments_start, segments_count, guid);
                     } else { // Отправка файла одним куском
                         WriteLog(' > Отправка файла ' + file.Name + ' (' + file.Size + ' байт)');
@@ -1353,6 +1368,11 @@ function Upload(queue) {
                 (FSO.GetFolder(INI.Paths.otzi_info_out).Files.Count > 0)) {
                 // WriteLog(' > Отправка документов ПТК ПСД:');
                 EnumerateFiles(INI.Paths.otzi_info_out);
+            }
+            if ((INI.Paths.sopr_info_out) &&
+                (FSO.GetFolder(INI.Paths.sopr_info_out).Files.Count > 0)) {
+                // WriteLog(' > Отправка документов ПТК ПСД:');
+                EnumerateFiles(INI.Paths.sopr_info_out);
             }
             if ((INI.Paths.ubn_info_out) &&
                 (FSO.GetFolder(INI.Paths.ubn_info_out).Files.Count > 0)) {

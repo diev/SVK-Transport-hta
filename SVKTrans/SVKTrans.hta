@@ -13,7 +13,7 @@
     selection="no"
     contextMenu="no"
     singleinstance="yes"
-    version="2.11.0"
+    version="2.12.0"
     author="mozers™ (retired)"
     email="mozers@mail.ru"
     icq="256106175"
@@ -249,9 +249,13 @@ function ReadIniFile(ini_file) {
 // Преобразовывает заданную дату в объект со свойствами: year, month, day, hours, min, sec
 function objDate(obj) {
     function format(x) {
-        return x < 10 ? '0' + x : String(x);
+        return x < 10 ?
+            '0' + x :
+             String(x);
     }
-    var d = obj ? new Date(obj) : new Date();
+    var d = obj ?
+        new Date(obj) :
+        new Date();
     var y = String(d.getYear());
     return {
         year:  y,                        // yyyy
@@ -267,7 +271,9 @@ function objDate(obj) {
 // Переводит кол-во секунд во время в виде "mm:ss"
 function sec2time(sec) {
     function format(x) {
-        return x < 10 ? '0' + x : x;
+        return x < 10 ?
+            '0' + x :
+            x;
     }
     var m = format(Math.floor(sec / 60));
     var s = format(sec % 60);
@@ -292,22 +298,11 @@ function MakeAllDir() {
     for (var i in INI.Paths) {
         path = (/^stat_info_in_filter\d$/.test(i)) ?
             INI.Paths[i].replace(/(.+)\\.+/, '$1') :
-            INI.Paths[i];
+                (/^stat_info_out_filter\d$/.test(i)) ?
+                INI.Paths[i].replace(/(.+)\\.+/, '$1') :
+                INI.Paths[i];
         if ((path) && (!FSO.FolderExists(path))) {
-            if (WshShell.Popup('Заданный Вами в SVKTrans.ini каталог\n' + path + '\nне существует!\n\nСоздать его?', 0,
-                'Предупреждение', 36) == 6) {
-                CreateFolder(path);
-            } else {
-                self.close();
-            }
-        }
-    }
-    for (var o in INI.Paths) {
-        path = (/^stat_info_out_filter\d$/.test(o)) ?
-            INI.Paths[o].replace(/(.+)\\.+/, '$1') :
-            INI.Paths[o];
-        if ((path) && (!FSO.FolderExists(path))) {
-            if (WshShell.Popup('Заданный Вами в SVKTrans.ini каталог\n' + path + '\nне существует!\n\nСоздать его?', 0,
+            if (WshShell.Popup('Заданный Вами в SVKTrans.ini (' + i + ') каталог\n' + path + '\nне существует!\n\nСоздать его?', 0,
                 'Предупреждение', 36) == 6) {
                 CreateFolder(path);
             } else {
@@ -541,18 +536,27 @@ function Connect() {
         }
     }
     online = true;
-    // первая очередь
+
+    /*
+    // первая очередь (платежи)
     Upload(1);
     Download(1);
-    // вторая очередь
+
+    // вторая очередь (отчетность)
     Upload(2);
     Download(2);
+    */
+
+    Upload();
+    Download();
+
     StartTimer(0); // периодическая проверка
     StartTimer(1); // проверка наличия исходящих сообщений
 }
 
 // Проверка наличия исходящих сообщений
 function CheckOutbox() {
+    /*
     if ((INI.Paths.pay_out) &&
         (FSO.FolderExists(INI.Paths.pay_out)) &&
         (FSO.GetFolder(INI.Paths.pay_out).Files.Count > 0)) {
@@ -563,6 +567,7 @@ function CheckOutbox() {
         (FSO.GetFolder(INI.Paths.pay_test_out).Files.Count > 0)) {
             return true;
         }
+    */
     if ((INI.Paths.stat_info_out) &&
         (FSO.FolderExists(INI.Paths.stat_info_out)) &&
         (FSO.GetFolder(INI.Paths.stat_info_out).Files.Count > 0)) {
@@ -730,6 +735,19 @@ function LoadStatInfoInFilters() {
 }
 
 // ------------------------------------------------
+// Возвращает индекс каталога назначения для входящего информационного сообщения или -1 для общего
+function GetStatInfoIndex(filename) {
+    for (var i = 0; i < StatInfoInFilters.length; i++) {
+        for (var j = 0; j < StatInfoInFilters[i].re.length; j++) {
+            if (StatInfoInFilters[i].re[j].test(filename)) {
+                return i; // StatInfoInFilters[i].path;
+            }
+        }
+    }
+    return -1; // INI.Paths.stat_info_in + '\\';
+}
+
+// ------------------------------------------------
 // Возвращает каталог назначения для входящего информационного сообщения
 function GetStatInfoDest(filename) {
     for (var i = 0; i < StatInfoInFilters.length; i++) {
@@ -745,7 +763,8 @@ function GetStatInfoDest(filename) {
 // ------------------------------------------------
 // Сортировка принятых файлов по каталогам назначения в зависимости от формата сообщения
 function SortingFiles(filename, format) {
-    if (isContainArray(['XMLEPD', 'XMLESID', 'RECEIPT'], format)) {
+    //if (isContainArray(['XMLEPD', 'XMLESID', 'RECEIPT'], format)) {
+    if (isContainArray(['RECEIPT'], format)) {
         xmlDoc.load (filename);
         if (xmlDoc.parseError.errorCode) {
             WriteLog('!не читаемый ' + format + ' документ');
@@ -754,6 +773,7 @@ function SortingFiles(filename, format) {
     }
     // ------------------------------------------------
     switch (format) {
+        /*
         case 'XMLEPD':
         case 'XMLESID':
             // Извлекаем из документа все адреса получателей в массив Recipients
@@ -826,12 +846,16 @@ function SortingFiles(filename, format) {
             // Ни рабочий ни тестовый адрес нашего АРМ КБР в списке получателей не указан
             WriteLog('!этот ' + format + ' документ адресован НЕ НАМ');
             break;
+        */
         case 'RECEIPT':
             var receipt_info = xmlDoc.getElementsByTagName('props:AcknowledgementInfo')[0].getElementsByTagName('props:ResultText')[0].childNodes[0].text;
             var fname = receipt_info.match(/имя файла:\s*([^\s,]+)/);
-            receipt_info = fname ? fname[1] : ': "' + receipt_info + '"';
+            receipt_info = fname ?
+                fname[1] :
+                ': "' + receipt_info + '"';
 
             switch(xmlDoc.getElementsByTagName('props:MessageInfo')[0].getElementsByTagName('props:To')[0].childNodes[0].text) {
+                /*
                 case INI.Account.UEO_uic_work:        // Логический адрес АРМ КБР
                     WriteLog('это квитанция о получении платежного документа ' + receipt_info);
                     if (INI.Paths.pay_kvit) {
@@ -846,14 +870,6 @@ function SortingFiles(filename, format) {
                         XCopyFile(filename, INI.Paths.pay_test_kvit + '\\', true); // в каталог квитанций на тестовые сообщения для АРМ КБР
                     } else {
                         WriteLog('!Каталог квитанций на тестовые сообщения для АРМ КБР НЕ ЗАДАН');
-                    }
-                    break;
-                case INI.Account.from_addr: // Адрес отправителя файлов статистической отчетности
-                    WriteLog('это квитанция о получении информационного сообщения ' + receipt_info);
-                    if (INI.Paths.stat_info_kvit) {
-                        XCopyFile(filename, INI.Paths.stat_info_kvit + '\\', true); // в каталог квитанций на информационные и сообщения из статистики
-                    } else {
-                        WriteLog('!Каталог квитанций на сообщения в статистику НЕ ЗАДАН');
                     }
                     break;
                 case INI.Account.UEO_uic_ies: // Логический адрес АРМ КБР
@@ -888,6 +904,15 @@ function SortingFiles(filename, format) {
                         WriteLog('!Каталог квитанций на тестовые сообщения для АРМ КБР НЕ ЗАДАН');
                     }
                     break;
+                */
+                case INI.Account.from_addr: // Адрес отправителя файлов статистической отчетности
+                    WriteLog('это квитанция о получении информационного сообщения ' + receipt_info);
+                    if (INI.Paths.stat_info_kvit) {
+                        XCopyFile(filename, INI.Paths.stat_info_kvit + '\\', true); // в каталог квитанций на информационные и сообщения из статистики
+                    } else {
+                        WriteLog('!Каталог квитанций на сообщения в статистику НЕ ЗАДАН');
+                    }
+                    break;
                     
                 default:
                     WriteLog('это квитанция о получении НЕИЗВЕСТНОГО документа ' + receipt_info);
@@ -896,8 +921,18 @@ function SortingFiles(filename, format) {
         case 'INFO':
             WriteLog('это документ ПТК ПСД');
             if (INI.Paths.stat_info_in) {
-                var stat_info_in_dest = GetStatInfoDest(FSO.GetFileName(filename));
-                XCopyFile(filename, stat_info_in_dest + '\\', true); // в каталоги входящих информационных и сообщений из статистики
+
+                //var stat_info_in_dest = GetStatInfoDest(FSO.GetFileName(filename));
+                //XCopyFile(filename, stat_info_in_dest + '\\', true); // в каталоги входящих информационных и сообщений из статистики
+
+                var idx = GetStatInfoIndex(FSO.GetFileName(filename));
+                if (idx == -1) {
+                    XCopyFile(filename, INI.Paths.stat_info_in + '\\', true); // в общий каталог входящих информационных и сообщений из статистики
+                } else {
+                    XCopyFile(filename, INI.Paths.stat_info_in + '\\', true); // в общий каталог входящих информационных и сообщений из статистики   
+                    XCopyFile(filename, StatInfoInFilters[idx].path + '\\', true); // в спецкаталог входящих информационных и сообщений из статистики   
+                }
+
             } else {
                 WriteLog('!Каталог входящих информационных и сообщений из статистики НЕ ЗАДАН');
             }
@@ -1134,9 +1169,10 @@ function GetList(response) {
 }
 
 // Запрос списка рейсов на сервере
-function Download(queue) {
+function Download(/*queue*/) {
     WshShell.RegWrite ('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\GlobalUserOffline', 0, 'REG_DWORD');
 
+    /*
     switch(queue) {
         case 1:
             if (INI.Account.web_login) {
@@ -1148,6 +1184,7 @@ function Download(queue) {
             break;
 
         case 2:
+    */
             if (INI.Account.web_login_info) {
                 WriteLog('> Запрос списка информационных и сообщений из статистики');
                 web_login = INI.Account.web_login_info;
@@ -1161,8 +1198,10 @@ function Download(queue) {
                 web_passw = INI.Account.web_passw_test;
                 GetXMLdata(url_get_list, GetList);
             }
+    /*
             break;
     }
+    */
 }
 
 
@@ -1230,6 +1269,7 @@ function UploadFile(file, out_dir, data, segment_number, segments_count, guid) {
             httpRequest.setRequestHeader('LegacyTransport-FileName', filename64);
             httpRequest.setRequestHeader('To', 'upsir'); // Рассылка документов
             break;
+        /*
         case INI.Paths.pay_out:
             // Заголовки для платежек
             httpRequest.setRequestHeader('Content-Type','application/xmlepd');
@@ -1242,6 +1282,7 @@ function UploadFile(file, out_dir, data, segment_number, segments_count, guid) {
             // httpRequest.setRequestHeader('To', 'uic:220200199811'); // Пользователь для тестового обмена с ЦОИ (на этот адрес мы отсылаем тесты)
             // для платежных xml сообщений заголовок 'To' игнорируется, т.к. ЦОИ анализирует одноименный нод в теле xml сообщения
             break;
+        */
     }
 
     if (segment_number) { // Дополнительные заголовки для сегментированных файлов
@@ -1307,7 +1348,7 @@ function UploadFile(file, out_dir, data, segment_number, segments_count, guid) {
 }
 
 // Проверка папок с файлами на отправку
-function Upload(queue) {
+function Upload(/*queue*/) {
     function EnumerateFiles(dir) {
         if (FSO.FolderExists(dir)) {
             var folder = FSO.GetFolder(dir);
@@ -1345,8 +1386,9 @@ function Upload(queue) {
         }
     }
 
+    /*
     switch(queue) {
-        case 1: 
+        case 1:
             // Исходящие платежные сообщения
             web_login = INI.Account.web_login;
             web_passw = INI.Account.web_passw;
@@ -1357,6 +1399,7 @@ function Upload(queue) {
             }
             break;
         case 2:
+    */
             // Исходящие информационные и сообщения в статистику
             if (INI.Account.web_login_info) {
                 web_login = INI.Account.web_login_info;
@@ -1398,6 +1441,7 @@ function Upload(queue) {
                 EnumerateFiles(INI.Paths.upsir_info_out);
             }
 
+            /*
             // Исходящие тестовые платежные сообщения
             if (INI.Account.web_login_test) {
                 web_login = INI.Account.web_login_test;
@@ -1408,8 +1452,11 @@ function Upload(queue) {
                 // WriteLog(' > Отправка ТЕСТОВЫХ платежных документов:');
                 EnumerateFiles(INI.Paths.pay_test_out);
             }
-           break;
+            */
+    /*
+            break;
     }
+    */
 }
 
 

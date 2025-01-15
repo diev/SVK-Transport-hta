@@ -13,12 +13,11 @@
     selection="no"
     contextMenu="no"
     singleinstance="yes"
-    version="2.12.0"
+    version="2.14.0"
     author="mozers™ (retired)"
-    email="mozers@mail.ru"
-    icq="256106175"
-    coauthor="Dmitrii Evdokimov, diev@mail.ru (active)"
- />
+    coauthor="Dmitrii Evdokimov (active)"
+    email="diev@mail.ru"
+/>
 <style type="text/css">
     body, table {font-family:MS Sans Serif; font-size:8pt; background-color:threedface; overflow:hidden;}
     body {margin:0;}
@@ -196,7 +195,7 @@ function utf8base64(str) {
     var xml = xmlDoc.createElement('tmp');
     xml.dataType = 'bin.base64';
     xml.nodeTypedValue = utf8(str);
-    return xml.text;
+    return xml.text.replace(/\n/gm, ''); // Удалить разбиение на строки по 72 символа
 }
 
 // Возвращает строку, состоящую из num символов chr
@@ -929,7 +928,7 @@ function SortingFiles(filename, format) {
                 if (idx == -1) {
                     XCopyFile(filename, INI.Paths.stat_info_in + '\\', true); // в общий каталог входящих информационных и сообщений из статистики
                 } else {
-                    XCopyFile(filename, INI.Paths.stat_info_in + '\\', true); // в общий каталог входящих информационных и сообщений из статистики   
+                    XCopyFile(filename, INI.Paths.stat_info_in + '\\', false); // в общий каталог входящих информационных и сообщений из статистики (не удаляя!)
                     XCopyFile(filename, StatInfoInFilters[idx].path + '\\', true); // в спецкаталог входящих информационных и сообщений из статистики   
                 }
 
@@ -1368,9 +1367,9 @@ function Upload(/*queue*/) {
                         // заполните переменные ниже своими значениями и временно снимите комментарий
                         // со следующего условного блока
 /*
-                        if (file.Name == 'ТК_КО_ezi06702.030.xml') { // имя проблемного файла
-                            guid = 'c6a94a08-153b-bfbf-76af-48a7ebe6c249'; // взять из лога
-                            segments_start = 577; // следующий номер сегмента, после того, на котором зависло
+                        if (file.Name == 'tps70d702.030.xml') { // имя проблемного файла
+                            guid = '4b2a3b3e-fcdc-4d8a-6a74-6bb497585961'; // взять из лога
+                            segments_start = 27; // следующий номер сегмента, после того, на котором зависло
                         }
 */
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,13 +1,14 @@
-# ![icon] [SVK Transport]
+# ![icon](docs/assets/images/svktrans.png) [SVK Transport]
 
-[![Build status]][appveyor]
-[![GitHub Release]][releases]
+[![Build status](https://ci.appveyor.com/api/projects/status/1mvedcg27p6n7aj0?svg=true)][appveyor]
+[![GitHub Release](https://img.shields.io/github/release/diev/SVK-Transport-hta.svg)][releases]
 
 Прием и отправка платежной XML информации (ушло в ТШ КБР и здесь теперь
 закомментировано), бинарных информационных и файлов статистики по HTTP
 протоколу в систему СВК Банка России.  
+Программа совместима с Дельта ФОИВ.
 
-![Рабочее окно приложения]
+![Рабочее окно приложения](docs/assets/images/screen.png)
 
 * [Важные изменения, влияющее на совместимость]
 * [Основные возможности программы]
@@ -131,6 +132,8 @@ DLL может выдать ошибку с кодом 0x80004005. Это сра
 Licensed under the [Apache License, Version 2.0].  
 (Вы можете использовать его совершенно свободно без всяких ограничений.)
 
+[![Telegram](https://img.shields.io/badge/t.me-dievdo-blue?logo=telegram)](https://t.me/dievdo)
+
 [Важные изменения, влияющее на совместимость]: #важные-изменения-влияющее-на-совместимость
 [Основные возможности программы]: #основные-возможности-программы
 [Замечания к использованию]: #замечания-к-использованию
@@ -148,8 +151,6 @@ Licensed under the [Apache License, Version 2.0].
 [CHANGELOG]: CHANGELOG.md
 [Apache License, Version 2.0]: LICENSE
 
-[icon]: docs/assets/images/svktrans.png
-[Рабочее окно приложения]: docs/assets/images/screen.png
 [файле]: docs/changelog.md
 
 [TSH Transport]: http://diev.github.io/TSH-Transport
@@ -166,6 +167,3 @@ Licensed under the [Apache License, Version 2.0].
 [Информация о новых версиях программного обеспечения]: https://www.cbr.ru/development/mcirabis/itest/ (СВК, УТА)
 [семантического версионирования]: http://semver.org/lang/ru/
 [Buffer]: http://www.xstandard.com/en/documentation/xbuffer/
-
-[Build status]: https://ci.appveyor.com/api/projects/status/1mvedcg27p6n7aj0?svg=true
-[GitHub Release]: https://img.shields.io/github/release/diev/SVK-Transport-hta.svg
